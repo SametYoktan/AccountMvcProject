@@ -184,7 +184,7 @@ namespace School.Controllers
         {
             if (string.IsNullOrEmpty(token))
             {
-                ViewBag.ErrorMessage = "Geçersiz istek.";
+                ViewBag.ErrorMessage = "Token geçersiz veya süresi dolmuş.";
                 return View();
             }
 
