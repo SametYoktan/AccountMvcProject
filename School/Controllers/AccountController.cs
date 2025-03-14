@@ -266,7 +266,6 @@ namespace School.Controllers
             }
 
             // Model valid değilse, kullanıcıya hata mesajı göster
-            Console.WriteLine("Hatalı Bilgiler");
             ViewBag.SuccessMessage = "Hatalı Bilgiler";
             return View(model);
         }
