@@ -209,5 +209,79 @@ namespace School.Services
 
             return true;
         }
+
+        public User? GetUserByResetToken(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return null;
+
+            return _context.Users.FirstOrDefault(u => u.ResetPasswordToken == token && u.ResetPasswordTokenExpiry > DateTime.UtcNow);
+        }
+
+        public bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrEmpty(token))
+            {
+                errorMessage = "Geçersiz veya süresi dolmuş token.";
+                return false;
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.ResetPasswordToken == token && u.ResetPasswordTokenExpiry > DateTime.UtcNow);
+
+            Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
+
+            if (user == null)
+            {
+                errorMessage = "Geçersiz veya süresi dolmuş token.";
+                return false;
+            }
+
+            // Şifre kontrolleri
+            if (string.IsNullOrEmpty(newPassword))
+            {
+                errorMessage = "Parola gereklidir.";
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(confirmPassword))
+            {
+                errorMessage = "Parolayı onaylamak gereklidir.";
+                return false;
+            }
+
+            if (newPassword.Length < 8)
+            {
+                errorMessage = "Parola en az 8 karakter uzunluğunda olmalıdır.";
+                return false;
+            }
+
+            if (!Regex.IsMatch(newPassword, @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$"))
+            {
+                errorMessage = "Parola en az bir büyük harf, bir rakam ve bir özel karakter içermelidir.";
+                return false;
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                errorMessage = "Parolalar eşleşmiyor.";
+                return false;
+            }
+
+            // Yeni şifreyi hash'le ve kaydet
+            string salt = GenerateSalt();
+            string hashedPassword = HashPassword(newPassword, salt);
+
+            user.PasswordHash = hashedPassword;
+            user.PasswordSalt = salt;
+            user.ResetPasswordToken = null;
+            user.ResetPasswordTokenExpiry = null;
+
+            _context.SaveChanges();
+            errorMessage= "Şifreniz başarıyla sıfırlandı."
+            Console.WriteLine("Şifreniz başarıyla sıfırlandı.");
+            return true;
+        }
+
     }
-}

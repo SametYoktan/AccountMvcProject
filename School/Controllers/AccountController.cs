@@ -22,7 +22,7 @@ namespace School.Controllers
         private readonly SchoolContext _context; // Veritabanı bağlantısı
         private readonly IAccountServices _accountService;
 
-        public AccountController(SchoolContext context,IAccountServices accountService)
+        public AccountController(SchoolContext context, IAccountServices accountService)
         {
             _context = context;
             _accountService = accountService;
@@ -182,22 +182,16 @@ namespace School.Controllers
         [HttpGet]
         public IActionResult ConfirmPassword(string token)
         {
-            if (string.IsNullOrEmpty(token))
-            {
-                ViewBag.ErrorMessage = "Token geçersiz veya süresi dolmuş.";
-                return View();
-            }
-
-            // Token ile kullanıcıyı bul
-            var user = _context.Users.FirstOrDefault(u => u.ResetPasswordToken == token && u.ResetPasswordTokenExpiry > DateTime.UtcNow);
+            var user = _accountService.GetUserByResetToken(token);
 
             if (user == null)
             {
                 ViewBag.ErrorMessage = "Token geçersiz veya süresi dolmuş.";
                 return View();
             }
+
             Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
-            // Token geçerli ise şifre sıfırlama formunu göster
+
             return View(new User { ResetPasswordToken = token });
         }
 
@@ -207,67 +201,16 @@ namespace School.Controllers
         {
             ModelState.Clear();
 
-            // Kullanıcı adı doğrulaması
-            if (string.IsNullOrEmpty(model.Password))
+            if (_accountService.ResetPassword(model.ResetPasswordToken, model.Password, model.ConfirmPassword, out string errorMessage))
             {
-                ModelState.AddModelError("Password", "Parola gereklidir.");
-            }
-            else if (model.Password.Length < 8)
-            {
-                ModelState.AddModelError("Password", "Parola en az 8 karakter uzunluğunda olmalıdır.");
-            }
-            else if (!Regex.IsMatch(model.Password, @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$"))
-            {
-                ModelState.AddModelError("Password", "Parola en az bir büyük harf, bir rakam ve bir özel karakter içermelidir.");
-            }
-
-            if (string.IsNullOrEmpty(model.ConfirmPassword))
-            {
-                ModelState.AddModelError("ConfirmPassword", "Parolayı onaylamak gereklidir.");
-            }
-            else if (model.Password != model.ConfirmPassword)
-            {
-                ModelState.AddModelError("ConfirmPassword", "Parolalar eşleşmiyor.");
-            }
-
-
-            // Geçerli bir token olup olmadığını tekrar kontrol et
-            var user = _context.Users
-                .FirstOrDefault(u => u.ResetPasswordToken == model.ResetPasswordToken && u.ResetPasswordTokenExpiry > DateTime.UtcNow);
-
-            Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
-            if (user == null)
-            {
-                ViewBag.ErrorMessage = "Geçersiz veya süresi dolmuş token.";
-                Console.WriteLine("Geçersiz veya süresi dolmuş token.");
-                return View("Error");
-            }
-
-            if (ModelState.IsValid)
-            {
-                // Yeni şifreyi hash'le ve salt üret
-                string salt = GenerateSalt(); // Benzersiz salt oluştur
-                string hashedPassword = HashPassword(model.Password, salt); // Model'deki yeni şifreyi hash'le
-
-                // Yeni şifreyi ve salt'ı kaydet
-                user.PasswordHash = hashedPassword;
-                user.PasswordSalt = salt;
-
-                // Şifre sıfırlama token'ını null yap ve süresini kaldır
-                user.ResetPasswordToken = null;
-                user.ResetPasswordTokenExpiry = null;
-
-                // Veritabanına kaydet
-                await _context.SaveChangesAsync();
-
                 ViewBag.SuccessMessage = "Şifreniz başarıyla sıfırlandı.";
-                Console.WriteLine("Şifreniz başarıyla sıfırlandı.");
                 return RedirectToAction("Login", "Account");
             }
-
-            // Model valid değilse, kullanıcıya hata mesajı göster
-            ViewBag.SuccessMessage = "Hatalı Bilgiler";
-            return View(model);
+            else
+            {
+                ViewBag.ErrorMessage = errorMessage;
+                return View(model);
+            }
         }
         #endregion
     }
