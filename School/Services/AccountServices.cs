@@ -23,12 +23,14 @@ namespace School.Services
         private readonly SchoolContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IEmailService _emailService;
+        private readonly ILogger<AccountServices> _logger;  // ILogger'ı ekliyoruz.
 
-        public AccountServices(SchoolContext context, IHttpContextAccessor httpContextAccessor, IEmailService emailService)
+        public AccountServices(SchoolContext context, IHttpContextAccessor httpContextAccessor, IEmailService emailService, ILogger<AccountServices> logger)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _emailService = emailService;
+            _logger = logger;
         }
 
         #region YARDIMCI METOTLAR
@@ -50,6 +52,7 @@ namespace School.Services
 
         public string HashPassword(string password, string salt)
         {
+            _logger.LogInformation("Şifre hashleniyor: {Password}, Salt: {Salt}", password, salt); // Loglama ekliyoruz (Tabii ki şifreyi açıkça loglamak istemezsiniz)
             using (var pbkdf2 = new Rfc2898DeriveBytes(password, Convert.FromBase64String(salt), 10000, HashAlgorithmName.SHA256))
             {
                 return Convert.ToBase64String(pbkdf2.GetBytes(64));
@@ -72,17 +75,37 @@ namespace School.Services
             Console.WriteLine(">>>>> GİRİŞ ZAMANI: " + authTime.ToLocalTime());
             user.LastLogin = authTime.ToLocalTime();
             _context.SaveChanges();
+            _logger.LogInformation("Kullanıcı giriş yaptı: {Username}, Giriş Zamanı: {AuthTime}", user.Username, authTime);  // Loglama ekliyoruz
+        }
+
+        public async Task UserLogOutAsync()
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+            await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Kullanıcıyı çıkış yaptıktan sonra çerezleri temizliyoruz
+            httpContext.Response.Cookies.Delete("UserInfo"); // AuthTime ve diğer kullanıcı bilgilerini içeren çerezi sil
+            httpContext.Response.Cookies.Delete(".AspNetCore.Cookies"); // Bu çerez, ASP.NET Core kimlik doğrulama çerezi
+            _logger.LogInformation("Kullanıcı çıkış yaptı: {Username}", httpContext.User.Identity?.Name); // Loglama ekliyoruz
         }
         #endregion
 
         public void UserRegister(User model)
         {
-            string salt = GenerateSalt();
-            string hashedPassword = HashPassword(model.Password, salt);
-            model.PasswordSalt = salt;
-            model.PasswordHash = hashedPassword;
-            _context.Users.Add(model);
-            _context.SaveChanges();
+            try
+            {
+                string salt = GenerateSalt();
+                string hashedPassword = HashPassword(model.Password, salt);
+                model.PasswordSalt = salt;
+                model.PasswordHash = hashedPassword;
+                _context.Users.Add(model);
+                _context.SaveChanges();
+                _logger.LogInformation("Yeni kullanıcı kaydedildi: {Username}", model.Username);  // Loglama ekliyoruz
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Kullanıcı kaydı sırasında hata oluştu! Kullanıcı adı: {Username}", model.Username);  // Hata loglama
+            }
         }
 
         public User? UserLoginControl(string userInfo)
@@ -99,7 +122,10 @@ namespace School.Services
             var user = UserIsnameAndEmailControl(username, email);
 
             if (user == null) // Eğer kullanıcı bulunamazsa yani çerzdeki veri yanlışsa null döndürmeliyiz!
+            {
+                _logger.LogWarning("Giriş denemesi başarısız: {Username}, {Email}", username, email); // Hata loglama
                 return null;
+            }
 
             UserLoginTime(user);
             return user;
@@ -111,6 +137,7 @@ namespace School.Services
 
             if (user == null)
             {
+                _logger.LogWarning("Başarısız giriş denemesi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
                 return null;
             }
 
@@ -118,12 +145,22 @@ namespace School.Services
 
             if (user.PasswordHash != hashedPassword) // Eğer hash'ler eşleşmezse
             {
+                _logger.LogWarning("Yanlış şifre girildi: {UsernameOrEmail}", usernameOrEmail);  // Yanlış şifre loglaması
                 return null; // Hatalı şifre, null döndürülür
             }
 
             // Başarılı giriş
-            UserLoginTime(user);
-            return user;
+            try
+            {
+                UserLoginTime(user);
+                _logger.LogInformation("Başarılı giriş: {UsernameOrEmail}", usernameOrEmail);  // Başarılı giriş
+                return user;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Kullanıcı giriş hatası: {UsernameOrEmail}", usernameOrEmail);  // Hata loglama
+                return null;
+            }
         }
 
         public async Task SetUserCookieAsync(string username, string email, bool rememberMe)
@@ -145,6 +182,7 @@ namespace School.Services
             if (httpContext != null)
             {
                 await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+                _logger.LogInformation("Kullanıcı giriş yaptı: {Username}, E-posta: {Email}", username, email);
 
                 if (rememberMe)
                 {
@@ -152,28 +190,22 @@ namespace School.Services
                     {
                         Expires = DateTime.UtcNow.AddDays(30),
                         HttpOnly = true,
+                        Secure = true,
                         SameSite = SameSiteMode.Lax
                     };
 
                     httpContext.Response.Cookies.Append("UserInfo", $"{username}|{email}", cookieOptions);
+                    _logger.LogInformation("UserInfo çerezi oluşturuldu: {Username}, {Email}", username, email);
                 }
             }
         }
 
-        public async Task UserLogOutAsync()
-        {
-            var httpContext = _httpContextAccessor.HttpContext;
-            await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            // Kullanıcıyı çıkış yaptıktan sonra çerezleri temizliyoruz
-            httpContext.Response.Cookies.Delete("UserInfo"); // AuthTime ve diğer kullanıcı bilgilerini içeren çerezi sil
-            httpContext.Response.Cookies.Delete(".AspNetCore.Cookies"); // Bu çerez, ASP.NET Core kimlik doğrulama çerezi
-        }
 
         public async Task<bool> ForgotPassword(string email)
         {
             if (string.IsNullOrEmpty(email) || !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
             {
+                _logger.LogWarning("Geçersiz e-posta formatı: {Email}", email); // Uyarı loglama
                 return false;
             }
 
@@ -182,16 +214,19 @@ namespace School.Services
 
             if (user == null)
             {
+                _logger.LogWarning("Şifre sıfırlama talebi, kullanıcı bulunamadı: {Email}", email); // Hata loglama
                 // Kullanıcı bulunamasa bile rastgele gecikme ile mesaj dön
                 await Task.Delay(new Random().Next(1500, 3000));
                 return true;
             }
 
+            _logger.LogInformation("Şifre sıfırlama talebi: {Email}", email);
             // Şifre sıfırlama token'ı oluştur
             string resetToken = Guid.NewGuid().ToString();
             user.ResetPasswordToken = resetToken;
             user.ResetPasswordTokenExpiry = DateTime.UtcNow.AddMinutes(60);
             await _context.SaveChangesAsync();
+            _logger.LogInformation("Şifre sıfırlama token'ı oluşturuldu: {ResetToken} Kullanıcı: {Email}", resetToken, email);
 
             // Şifre sıfırlama linki oluştur
             var resetLink = $"https://yourdomain.com/Account/ConfirmPassword?token={resetToken}";
@@ -200,9 +235,11 @@ namespace School.Services
             try
             {
                 await _emailService.SendEmailAsync(email, "Şifre Sıfırlama", emailBody);
+                _logger.LogInformation("Şifre sıfırlama e-postası yollandı: {Email}", email);
             }
             catch (Exception ex)
             {
+                _logger.LogInformation("E-posta gönderme hatası: {Email}"+" "+email,ex.Message);
                 Console.WriteLine("E-posta gönderme hatası: " + ex.Message);
                 return false;
             }
@@ -225,6 +262,7 @@ namespace School.Services
             if (string.IsNullOrEmpty(token))
             {
                 errorMessage = "Geçersiz veya süresi dolmuş token.";
+                _logger.LogWarning("Geçersiz veya süresi dolmuş token: {Token}", token);  // Uyarı loglama
                 return false;
             }
 
@@ -235,6 +273,7 @@ namespace School.Services
             if (user == null)
             {
                 errorMessage = "Geçersiz veya süresi dolmuş token.";
+                _logger.LogWarning("Token geçersiz veya süresi dolmuş: {Token}", token);  // Uyarı loglama
                 return false;
             }
 
@@ -266,6 +305,7 @@ namespace School.Services
             if (newPassword != confirmPassword)
             {
                 errorMessage = "Parolalar eşleşmiyor.";
+                _logger.LogWarning("Şifre eşleşmiyor: {Token}", token);  // Loglama
                 return false;
             }
 
@@ -279,9 +319,10 @@ namespace School.Services
             user.ResetPasswordTokenExpiry = null;
 
             _context.SaveChanges();
-            errorMessage= "Şifreniz başarıyla sıfırlandı."
+            errorMessage = "Şifreniz başarıyla sıfırlandı.";
             Console.WriteLine("Şifreniz başarıyla sıfırlandı.");
+            _logger.LogInformation("Şifre başarıyla sıfırlandı: {Username}", user.Username);
             return true;
         }
-
     }
+}

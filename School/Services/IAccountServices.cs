@@ -4,6 +4,7 @@ namespace School.Services
 {
     public interface IAccountServices
     {
+        #region YARDIMCI METOTLAR
         bool UserIsnameControl(string username);//Kullanıcı Adı Db de Varmı Yokmu Kontrol Eder
         bool UserIsEmailControl(string email);//E-Mail Db de Varmı Yokmu Kontrol Eder
         User? UserIsnameAndEmailControl(string username, string email);//Burası Kullanıcı Adı Ve Mail'i Direk Çerezdeki Veriden Çekiyor Textboxtan Değil O yüzden model.Username Yazmadık
@@ -11,6 +12,7 @@ namespace School.Services
         string GenerateSalt();
         void UserLoginTime(User user);
         Task UserLogOutAsync();
+        #endregion
 
         void UserRegister(User model);
 
