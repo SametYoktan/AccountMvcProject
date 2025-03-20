@@ -67,3 +67,4 @@ RememberMe seçiliyse 30 gün, değilse 10 dakika geçerli.
 Çıkışta çerezler temizleniyor.
 Kullanıcı işlem yapmazsa oturum otomatik düşüyor.
 Textboxların tüm null ve geçerli formatta yazılıp yazılmadığı gibi kontollerin hepsi yapıldı.
+SeriLog İle Log Kayıtları Ana Dizinde Tutulur.
