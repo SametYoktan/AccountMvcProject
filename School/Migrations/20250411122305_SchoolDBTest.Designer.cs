@@ -12,8 +12,8 @@ using School.Models;
 namespace School.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20250305122406_AccountDB")]
-    partial class AccountDB
+    [Migration("20250411122305_SchoolDBTest")]
+    partial class SchoolDBTest
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -110,6 +110,9 @@ namespace School.Migrations
 
                     b.Property<bool>("IsEmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<int>("LoginErrorNumber")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -255,6 +258,9 @@ namespace School.Migrations
 
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("LoginErrorNumber")
+                        .HasColumnType("int");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");

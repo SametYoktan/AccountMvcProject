@@ -26,6 +26,8 @@ namespace School.Models
 
         public bool IsDeleted { get; set; } = false; // Varsayılan olarak silinmemiş
 
+        public int LoginErrorNumber { get; set; }
+
         [Phone(ErrorMessage = "Geçerli bir numara girin.")]
         public string? PhoneNumber { get; set; }
 

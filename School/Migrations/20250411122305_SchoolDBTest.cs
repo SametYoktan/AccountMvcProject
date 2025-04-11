@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace School.Migrations
 {
     /// <inheritdoc />
-    public partial class AccountDB : Migration
+    public partial class SchoolDBTest : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,6 +25,7 @@ namespace School.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    LoginErrorNumber = table.Column<int>(type: "int", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsEmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
@@ -94,6 +95,7 @@ namespace School.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     PhoneNumber = table.Column<bool>(type: "bit", nullable: true),
+                    LoginErrorNumber = table.Column<int>(type: "int", nullable: false),
                     ResetPasswordToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ResetPasswordTokenExpiry = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },

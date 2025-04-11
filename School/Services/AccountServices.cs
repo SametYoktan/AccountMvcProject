@@ -135,7 +135,7 @@ namespace School.Services
         {
             var user = UserIsnameAndEmailControl(usernameOrEmail, usernameOrEmail);
 
-            if (user == null)
+            if (user == null)//SİSTEMDE OLMAYAN KULLANICI GİRİŞ YAPMAYA ÇALIŞIRSA BU LOG DÖNER
             {
                 _logger.LogWarning("Başarısız giriş denemesi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
                 return null;
@@ -146,7 +146,23 @@ namespace School.Services
             if (user.PasswordHash != hashedPassword) // Eğer hash'ler eşleşmezse
             {
                 _logger.LogWarning("Yanlış şifre girildi: {UsernameOrEmail}", usernameOrEmail);  // Yanlış şifre loglaması
+                if (user.LoginErrorNumber >= 5)
+                {
+                    user.IsActive = false;
+                    _context.SaveChanges();
+                    _logger.LogWarning("Hesap kilitlendi: {UsernameOrEmail}", usernameOrEmail);  // Yanlış şifre loglaması
+                    return null;
+                }
+                user.LoginErrorNumber++;
+                _context.SaveChanges();
+                _logger.LogWarning("Hatalı giriş sayısı: {user.LoginErrorNumber}", user.LoginErrorNumber);  // Yanlış şifre loglaması
                 return null; // Hatalı şifre, null döndürülür
+            }
+
+            if (!user.IsActive)
+            {
+                _logger.LogWarning("Kilitli hesaba giriş denemesi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
+                //KİTLİ HESABA GİRİŞ YAPILMAYA ÇALIŞILIRSA OTOMATİK OTOMATİK HESABI AKTİF ETMEK İÇİN MAİL GÖNDERİLSİN
             }
 
             // Başarılı giriş
@@ -239,7 +255,7 @@ namespace School.Services
             }
             catch (Exception ex)
             {
-                _logger.LogInformation("E-posta gönderme hatası: {Email}"+" "+email,ex.Message);
+                _logger.LogInformation("E-posta gönderme hatası: {Email}" + " " + email, ex.Message);
                 Console.WriteLine("E-posta gönderme hatası: " + ex.Message);
                 return false;
             }

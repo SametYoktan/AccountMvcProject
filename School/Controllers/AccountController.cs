@@ -128,7 +128,7 @@ namespace School.Controllers
 
             var user = _accountService.UserLogin(model.Username, model.Password);
 
-            if (user == null)
+            if (user == null || !user.IsActive)
             {
                 ModelState.AddModelError("Password", "Kullanıcı adı veya parola hatalı.");
                 return View(model); // Hatalarla geri dön

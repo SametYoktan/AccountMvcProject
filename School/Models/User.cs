@@ -25,6 +25,8 @@ namespace School.Models
         public bool IsDeleted { get; set; } = false; // Varsayılan olarak silinmemiş
         public bool? PhoneNumber { get; set; } // Varsayılan olarak silinmemiş
 
+        public int LoginErrorNumber { get; set; }
+
         //[NotMapped] özelliği, bu alanın veritabanında bir sütun olarak tutulmayacağını belirtir.
         //Yani bu alan sadece uygulama tarafında kullanılır. Bu örnekte, kullanıcının şifresini tutar ve genellikle şifreyi doğrulamak amacıyla kullanılır.
         [NotMapped]

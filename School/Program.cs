@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // SeriLog yapýlandýrmasý
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug() // Tüm log seviyelerini (Debug ve daha yukarý) almak için
-    //.WriteTo.Console() // Konsola log yazdýrma
+    .WriteTo.Console() // Konsola log yazdýrma
     .WriteTo.File("logs/myapp.log", rollingInterval: RollingInterval.Day) // Dosyaya log yazdýrma
     .CreateLogger();
 
@@ -74,10 +74,10 @@ app.Use(async (context, next) =>
     Log.Information("Kullanýcý Adý: {UserName}", user.Identity.Name);
     Log.Information("Hangi Sayfada: {RequestPath}", context.Request.Path);
     Log.Information("Çerezdeki Veri: {CookieValue}", myCookieValue); // Çerezdeki veriyi yazdýr
-    Console.WriteLine($">>>>>KULLANICI AKTÝFMÝ {user.Identity.IsAuthenticated}");
-    Console.WriteLine($">>>>>KULLANICI ADI {user.Identity.Name}");
-    Console.WriteLine($">>>>>HANGÝ SAYFADAYIM {context.Request.Path}");
-    Console.WriteLine($">>>>>ÇEREZDEKÝ VERÝ {myCookieValue}");
+    //Console.WriteLine($">>>>>KULLANICI AKTÝFMÝ {user.Identity.IsAuthenticated}");
+    //Console.WriteLine($">>>>>KULLANICI ADI {user.Identity.Name}");
+    //Console.WriteLine($">>>>>HANGÝ SAYFADAYIM {context.Request.Path}");
+    //Console.WriteLine($">>>>>ÇEREZDEKÝ VERÝ {myCookieValue}");
     await next();
 });
 
