@@ -88,6 +88,13 @@ namespace School.Services
             httpContext.Response.Cookies.Delete(".AspNetCore.Cookies"); // Bu çerez, ASP.NET Core kimlik doğrulama çerezi
             _logger.LogInformation("Kullanıcı çıkış yaptı: {Username}", httpContext.User.Identity?.Name); // Loglama ekliyoruz
         }
+
+        void AccountUnlockMail(User user,string usernameOrEmail) //interface olarak tanımlamadık çünkü sadece burada kullanacağız
+        {
+            var emailBody = $"Hesabınız Şüpheli Giriş Nedeniyle Kilitlendi Kilidi Açmak için bağlantıya tıklayın:<br><br> <a href=''>Hesabınız Kilitlendi</a>";
+            _emailService.SendEmailAsync(user.Email, "Hesabınız Kilitlendi", emailBody);
+            _logger.LogWarning("Kilitli Hesaba Ait E-mail Adresine Unlock Maili Gönderildi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
+        }
         #endregion
 
         public void UserRegister(User model)
@@ -146,22 +153,24 @@ namespace School.Services
             if (user.PasswordHash != hashedPassword) // Eğer hash'ler eşleşmezse
             {
                 _logger.LogWarning("Yanlış şifre girildi: {UsernameOrEmail}", usernameOrEmail);  // Yanlış şifre loglaması
-                if (user.LoginErrorNumber >= 5)
+                user.LoginErrorNumber++;
+                _context.SaveChanges();
+                _logger.LogWarning("Hatalı giriş sayısı: {user.LoginErrorNumber}", user.LoginErrorNumber);  // Yanlış şifre loglaması
+                if (user.LoginErrorNumber >= 5 && user.IsActive)
                 {
                     user.IsActive = false;
                     _context.SaveChanges();
                     _logger.LogWarning("Hesap kilitlendi: {UsernameOrEmail}", usernameOrEmail);  // Yanlış şifre loglaması
-                    return null;
+                    AccountUnlockMail(user, usernameOrEmail);
                 }
-                user.LoginErrorNumber++;
-                _context.SaveChanges();
-                _logger.LogWarning("Hatalı giriş sayısı: {user.LoginErrorNumber}", user.LoginErrorNumber);  // Yanlış şifre loglaması
                 return null; // Hatalı şifre, null döndürülür
             }
 
             if (!user.IsActive)
             {
                 _logger.LogWarning("Kilitli hesaba giriş denemesi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
+                AccountUnlockMail(user, usernameOrEmail);
+                return user;
                 //KİTLİ HESABA GİRİŞ YAPILMAYA ÇALIŞILIRSA OTOMATİK OTOMATİK HESABI AKTİF ETMEK İÇİN MAİL GÖNDERİLSİN
             }
 
