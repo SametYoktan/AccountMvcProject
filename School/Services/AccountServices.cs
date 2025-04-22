@@ -91,7 +91,10 @@ namespace School.Services
 
         void AccountUnlockMail(User user,string usernameOrEmail) //interface olarak tanımlamadık çünkü sadece burada kullanacağız
         {
-            var emailBody = $"Hesabınız Şüpheli Giriş Nedeniyle Kilitlendi Kilidi Açmak için bağlantıya tıklayın:<br><br> <a href=''>Hesabınız Kilitlendi</a>";
+            _logger.LogWarning("Kilitli Hesabı Açma Talebi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
+            var activationLink = $"https://localhost:7070/Account/ActivateAndRedirect?email={user.Email}";
+            var emailBody = $"Hesabınızı aktifleştirmek için aşağıdaki bağlantıya tıklayın:<br><br> <a href='{activationLink}'>Hesabı Aktifleştir</a>";
+            //var emailBody = $"Hesabınız Şüpheli Giriş Nedeniyle Kilitlendi Kilidi Açmak için bağlantıya tıklayın:<br><br> <a href=''>Hesabınız Kilitlendi</a>";
             _emailService.SendEmailAsync(user.Email, "Hesabınız Kilitlendi", emailBody);
             _logger.LogWarning("Kilitli Hesaba Ait E-mail Adresine Unlock Maili Gönderildi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
         }
@@ -171,7 +174,7 @@ namespace School.Services
                 _logger.LogWarning("Kilitli hesaba giriş denemesi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
                 AccountUnlockMail(user, usernameOrEmail);
                 return user;
-                //KİTLİ HESABA GİRİŞ YAPILMAYA ÇALIŞILIRSA OTOMATİK OTOMATİK HESABI AKTİF ETMEK İÇİN MAİL GÖNDERİLSİN
+                //KİTLİ HESABA GİRİŞ YAPILMAYA ÇALIŞILIRSA OTOMATİK HESABI AKTİF ETMEK İÇİN MAİL GÖNDERİLSİN
             }
 
             // Başarılı giriş
@@ -225,7 +228,6 @@ namespace School.Services
             }
         }
 
-
         public async Task<bool> ForgotPassword(string email)
         {
             if (string.IsNullOrEmpty(email) || !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
@@ -254,7 +256,7 @@ namespace School.Services
             _logger.LogInformation("Şifre sıfırlama token'ı oluşturuldu: {ResetToken} Kullanıcı: {Email}", resetToken, email);
 
             // Şifre sıfırlama linki oluştur
-            var resetLink = $"https://yourdomain.com/Account/ConfirmPassword?token={resetToken}";
+            var resetLink = $"https://localhost:7070/Account/ConfirmPassword?token={resetToken}";
             var emailBody = $"Şifrenizi sıfırlamak için bağlantıya tıklayın:<br><br> <a href='{resetLink}'>Şifreyi Sıfırla</a>";
 
             try

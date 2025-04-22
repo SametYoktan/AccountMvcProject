@@ -21,11 +21,13 @@ namespace School.Controllers
     {
         private readonly SchoolContext _context; // Veritabanı bağlantısı
         private readonly IAccountServices _accountService;
+        private readonly ILogger<AccountController> _logger;  // ILogger'ı ekliyoruz.
 
-        public AccountController(SchoolContext context, IAccountServices accountService)
+        public AccountController(SchoolContext context, IAccountServices accountService, ILogger<AccountController> logger)
         {
             _context = context;
             _accountService = accountService;
+            _logger = logger;
         }
 
         //Sayfa açılırken → GET çalışır(formu gösterir).
@@ -136,7 +138,13 @@ namespace School.Controllers
 
             // Çerezi manuel olarak ayarlıyoruz
             await SetUserCookie(user.Username, user.Email, RememberMe);
+
+            ///Adminmi Standart Kullanıcımı Onu Kontrol Ediyoruz
+			var role = _context.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).FirstOrDefault();
+			if (role==2)
             return RedirectToAction("Index", "Home");
+            else
+            return RedirectToAction("Student", "Home");
         }
 
         public async Task SetUserCookie(string username, string email, bool rememberMe)
@@ -213,5 +221,24 @@ namespace School.Controllers
             }
         }
         #endregion
+
+        [HttpGet]
+        public async Task<IActionResult> ActivateAndRedirect(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                _logger.LogInformation("ÖMER: {Email}", email);
+                return NotFound("Kullanıcı bulunamadı.");
+            }
+
+            user.IsActive = true;
+            user.LoginErrorNumber = 0;
+            await _context.SaveChangesAsync();
+                _logger.LogInformation("FARUK: {Email}", email);
+
+            return RedirectToAction("Login", "Account", new { activated = true });
+        }
+
     }
 }
