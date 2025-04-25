@@ -140,6 +140,7 @@ namespace School.Controllers
             await SetUserCookie(user.Username, user.Email, RememberMe);
 
             ///Adminmi Standart Kullanıcımı Onu Kontrol Ediyoruz
+            /// 2=Standart,1=Admin
 			var role = _context.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).FirstOrDefault();
 			if (role==2)
             return RedirectToAction("Index", "Home");
@@ -222,8 +223,9 @@ namespace School.Controllers
         }
         #endregion
 
+        #region Arka Planda Çalışan Hesap Aktifleştirme Methodu
         [HttpGet]
-        public async Task<IActionResult> ActivateAndRedirect(string email)
+        public async Task<IActionResult> ActivateAndRedirect(string email)//Bu Method Bir Sayfaya Bağlı Çalışmaz.Arka Planda Tetiklendiğinde Çalışır
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
@@ -239,6 +241,7 @@ namespace School.Controllers
 
             return RedirectToAction("Login", "Account", new { activated = true });
         }
+        #endregion
 
     }
 }
