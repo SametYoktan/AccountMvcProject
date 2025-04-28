@@ -17,9 +17,9 @@ namespace School.Models
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }  // Kullanıcı-Rol ilişkisi
         public DbSet<NewUser> NewUsers { get; set; }  // Kullanıcı-Rol ilişkisi
-        public DbSet<NewUserLoginHistory> NewLoginHistort { get; set; }  // Kullanıcı-Rol ilişkisi
-        public DbSet<NewPasswordResetHistoryToken> NewPasswordHistory { get; set; }  // Kullanıcı-Rol ilişkisi
-        public DbSet<NewEmailHistoryToken> NewEmailHistory { get; set; }  // Kullanıcı-Rol ilişkisi
+        public DbSet<NewLoginHistory> NewLoginHistort { get; set; }  // Kullanıcı-Rol ilişkisi
+        public DbSet<NewPasswordHistory> NewPasswordHistory { get; set; }  // Kullanıcı-Rol ilişkisi
+        public DbSet<NewEmailHistory> NewEmailHistory { get; set; }  // Kullanıcı-Rol ilişkisi
 
     }
 }

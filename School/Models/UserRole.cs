@@ -15,5 +15,6 @@
 
         // Bu rolü temsil eden Role objesi
         public Role Role { get; set; }
-    }
+
+	}
 }
