@@ -203,7 +203,7 @@ namespace School.Services
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = rememberMe,
-                ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(10)
+                ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(10)//Sayfada İşlem Yapılmadığında Bu Süre Sonunda Kullanıcıyı At
             };
 
             var httpContext = _httpContextAccessor.HttpContext;

@@ -12,9 +12,6 @@ namespace School.Models
         public DbSet<Student> Student { get; set; }
         // Yeni tabloları DbContext'e ekliyoruz
         //public DbSet<User> Users { get; set; }
-        public DbSet<PasswordReset> PasswordResets { get; set; }
-        public DbSet<Role> Roles { get; set; }
-        public DbSet<UserRole> UserRoles { get; set; }  // Kullanıcı-Rol ilişkisi
 
         public DbSet<NewEmailHistory> _NewEmailHistory {  get; set; }
         public DbSet<NewLoginHistory> _NewLoginHistory {  get; set; }

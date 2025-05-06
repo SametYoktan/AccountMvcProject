@@ -8,7 +8,7 @@
 		public int UserID { get; set; }
 
 		// Kullanıcı rolünün ilişkilendirildiği rol ID'si
-		public int RoleID { get; set; }
+		public int RoleID { get; set; } = 1; ///// 1=Standart,2=Admin
 
 		public DateTime CreateDate { get; set; } = DateTime.Now;  // Rolün kullanıcıya kayıt tarihi
 	}

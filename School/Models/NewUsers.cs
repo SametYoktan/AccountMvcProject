@@ -33,8 +33,6 @@ namespace School.Models
 
         public bool IsEmailConfirmed { get; set; } = false;  // Kullanıcının e-posta doğrulandı mı?
 
-        public int RoleID { get; set; } = 2; // Varsayılan olarak 2 (User)
-
         //[NotMapped] özelliği, bu alanın veritabanında bir sütun olarak tutulmayacağını belirtir.
         //Yani bu alan sadece uygulama tarafında kullanılır. Bu örnekte, kullanıcının şifresini tutar ve genellikle şifreyi doğrulamak amacıyla kullanılır.
         [NotMapped]

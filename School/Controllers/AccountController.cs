@@ -132,9 +132,10 @@ namespace School.Controllers
             await SetUserCookie(user.Email,user.Name,user.Surname, RememberMe);
 
             ///Adminmi Standart Kullanıcımı Onu Kontrol Ediyoruz
-            /// 2=Standart,1=Admin
-			var role = _context.UserRoles.Where(ur => ur.UserId == user.Id).Select(ur => ur.RoleId).FirstOrDefault();
-			if (role==2)
+            /// 1=Standart,2=Admin
+			var role = _context._NewUserRoles.Where(ur => ur.UserID == user.Id).Select(ur => ur.RoleID).FirstOrDefault();
+                Console.WriteLine(role);
+            if (role == 1)
             return RedirectToAction("Index", "Home");
             else
             return RedirectToAction("Student", "Home");
