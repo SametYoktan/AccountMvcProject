@@ -5,6 +5,6 @@
 		public int ID { get; set; }
 		public int UserID { get; set; }
 		public bool IsUsed { get; set; }
-		public DateTime CreateDate { get; set; } = DateTime.UtcNow;  // Rolün kayıt tarihi
+		public DateTime CreateDate { get; set; } = DateTime.Now;  // Rolün kayıt tarihi
 	}
 }

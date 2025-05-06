@@ -7,12 +7,14 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/* Seri Logu Aç Kapa
 // SeriLog yapýlandýrmasý
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug() // Tüm log seviyelerini (Debug ve daha yukarý) almak için
     .WriteTo.Console() // Konsola log yazdýrma
     .WriteTo.File("logs/myapp.log", rollingInterval: RollingInterval.Day) // Dosyaya log yazdýrma
     .CreateLogger();
+*/
 
 // SeriLog'u DI konteynýrýna ekliyoruz
 builder.Host.UseSerilog();

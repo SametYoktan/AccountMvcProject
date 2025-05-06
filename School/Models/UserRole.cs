@@ -8,7 +8,7 @@
         public int UserId { get; set; }
 
         // Bu kullanıcıyı temsil eden User objesi
-        public User User { get; set; }
+        //public User User { get; set; }
 
         // Kullanıcı rolünün ilişkilendirildiği rol ID'si
         public int RoleId { get; set; }

@@ -2,7 +2,7 @@
     ViewData["Title"] = "Giriş Yap";
 }
 
-@model School.Models.User /* Burada model bağlamasını yapıyoruz */
+@model School.Models.NewUsers /* Burada model bağlamasını yapıyoruz */
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -105,8 +105,8 @@
                     @Html.AntiForgeryToken()  <!-- AntiForgery Token eklemek önemlidir -->
                     <div class="mb-3">
                         <label for="Username" class="form-label">Kullanıcı Adı</label>
-                        @Html.TextBoxFor(m => m.Username, new { @class = "form-control", placeholder = "Kullanıcı adı veya E-posta giriniz", autocomplete = "username" })
-                        @Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger" })
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Kullanıcı adı veya E-posta giriniz", autocomplete = "username" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
                     </div>
                     <div class="mb-3">
                         <label for="Password" class="form-label">Parola</label>

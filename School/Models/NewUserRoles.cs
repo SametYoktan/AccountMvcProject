@@ -10,6 +10,6 @@
 		// Kullanıcı rolünün ilişkilendirildiği rol ID'si
 		public int RoleID { get; set; }
 
-		public DateTime CreateDate { get; set; } = DateTime.UtcNow;  // Rolün kullanıcıya kayıt tarihi
+		public DateTime CreateDate { get; set; } = DateTime.Now;  // Rolün kullanıcıya kayıt tarihi
 	}
 }

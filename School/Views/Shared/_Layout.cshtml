@@ -46,7 +46,7 @@
 								@Html.AntiForgeryToken()  <!-- CSRF koruması -->
 								<div class="dropdown">
 									<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-										@User.Identity.Name
+									@User.Identity.Name
 									</button>
 									<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 									<li><a class="dropdown-item" href="@Url.Action("Index", "Home")">AnaSayfa</a></li>
@@ -94,6 +94,7 @@
 			&copy; 2024 - School - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
 		</div>
 	</footer>
+
 	<script src="~/lib/jquery/dist/jquery.min.js"></script>
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>

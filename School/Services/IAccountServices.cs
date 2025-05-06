@@ -7,22 +7,22 @@ namespace School.Services
         #region YARDIMCI METOTLAR
         bool UserIsnameControl(string username);//Kullanıcı Adı Db de Varmı Yokmu Kontrol Eder
         bool UserIsEmailControl(string email);//E-Mail Db de Varmı Yokmu Kontrol Eder
-        User? UserIsnameAndEmailControl(string username, string email);//Burası Kullanıcı Adı Ve Mail'i Direk Çerezdeki Veriden Çekiyor Textboxtan Değil O yüzden model.Username Yazmadık
+        NewUsers? UserIsnameAndEmailControl(string username, string email);//Burası Kullanıcı Adı Ve Mail'i Direk Çerezdeki Veriden Çekiyor Textboxtan Değil O yüzden model.Username Yazmadık
         string HashPassword(string password, string salt);
         string GenerateSalt();
-        void UserLoginTime(User user);
+        void UserLoginTime(NewUsers user);
         Task UserLogOutAsync();
         #endregion
 
-        void UserRegister(User model);
+        void UserRegister(NewUsers model);
 
-        User? UserLoginControl(string userInfo);
-        User? UserLogin(string usernameOrEmail, string password);
-        Task SetUserCookieAsync(string username, string email, bool rememberMe);
+		NewUsers? UserLoginControl(string userInfo);
+		NewUsers? UserLogin(string usernameOrEmail, string password);
+        Task SetUserCookieAsync(string email,string name,string surname, bool rememberMe);
 
         Task<bool> ForgotPassword(string email);
 
-        User? GetUserByResetToken(string token);
+		NewPasswordHistory? GetUserByResetToken(string token);
         bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage);
     }
 }

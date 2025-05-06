@@ -10,6 +10,6 @@ namespace School.Models
         public string UserEmail { get; set; }
         public string Description { get; set; }
         public string MailType { get; set; }
-		public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Token oluşturulma zamanı
-    }
+		public DateTime CreateDate { get; set; } = DateTime.Now;  // Rolün kayıt tarihi
+	}
 }

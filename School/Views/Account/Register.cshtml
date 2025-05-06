@@ -2,7 +2,7 @@
 	ViewData["Title"] = "Kayıt Ol";
 }
 
-@model School.Models.User  /* Burada model bağlamasını yapıyoruz */
+@model School.Models.NewUsers  /* Burada model bağlamasını yapıyoruz */
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -25,7 +25,7 @@
 			max-width: 450px;
 			width: 100%;
 			padding: 15px;
-			margin-top: 25px; /* Eğer navbar yukarı kayıyorsa, bu stil eklenebilir */
+			margin-top: 0px; /* Eğer navbar yukarı kayıyorsa, bu stil eklenebilir */
 		}
 
 		.card {
@@ -111,16 +111,28 @@
 
 				<h5 class="card-title">Kayıt Ol</h5>
 				<form method="post" action="/Account/Register" id="registerForm">
-					@Html.AntiForgeryToken()
-					<div class="mb-3">
-						<label for="Username" class="form-label">Kullanıcı Adı</label>
-						@Html.TextBoxFor(m => m.Username, new { @class = "form-control", placeholder = "Kullanıcı adınızı girin", autocomplete = "username" })
-						@Html.ValidationMessageFor(m => m.Username, "", new { @class = "text-danger" })
-					</div>
+					@Html.AntiForgeryToken()				
 					<div class="mb-3">
 						<label for="Email" class="form-label">E-posta</label>
 						@Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "E-posta adresinizi girin", autocomplete = "email" })
 						@Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+					</div>
+					<div class="row mb-3">
+						<div class="col-md-6">
+							<label for="Name" class="form-label">Ad</label>
+							@Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Adınızı girin" })
+							@Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+						</div>
+						<div class="col-md-6">
+							<label for="Surname" class="form-label">Soyad</label>
+							@Html.TextBoxFor(m => m.Surname, new { @class = "form-control", placeholder = "Soyadınızı girin" })
+							@Html.ValidationMessageFor(m => m.Surname, "", new { @class = "text-danger" })
+						</div>
+					</div>
+					<div class="mb-3">
+						<label for="Phone" class="form-label">Telefon</label>
+						@Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", placeholder = "Telefon Numaranızı girin", autocomplete = "phone" })
+						@Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger" })
 					</div>
 					<div class="mb-3">
 						<label for="Password" class="form-label">Parola</label>

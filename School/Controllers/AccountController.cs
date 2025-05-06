@@ -14,6 +14,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace School.Controllers
 {
@@ -43,36 +44,27 @@ namespace School.Controllers
         // Kullanıcı kaydını işler
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Register(User model)
+        public IActionResult Register(NewUsers model)
         {
-            if (ModelState.IsValid)
-            {
-                // Kullanıcı adı kontrolü
-                if (_accountService.UserIsnameControl(model.Username))
-                {
-                    ModelState.AddModelError("Username", "Bu kullanıcı adı zaten alınmış.");
-                    return View(model);
-                }
-
-                // E-posta kontrolü
-                if (_accountService.UserIsEmailControl(model.Email))
+			if (ModelState.IsValid)
+			{
+				// E-posta kontrolü
+				if (_accountService.UserIsEmailControl(model.Email))
                 {
                     ModelState.AddModelError("Email", "Bu e-posta adresi zaten kayıtlı.");
-                    return View(model);
+					return View(model);
                 }
-
-                _accountService.UserRegister(model);
-
-                return RedirectToAction("Login", "Account");
+				_accountService.UserRegister(model);
+				return RedirectToAction("Login", "Account");
             }
 
-            // Hataları debug etmek için ModelState hatalarını yazdırma
-            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+			// Hataları debug etmek için ModelState hatalarını yazdırma
+			foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
             {
+                Console.WriteLine(error.ErrorMessage);
                 ViewBag.Error = error.ErrorMessage;
             }
-
-            return View(model); // Hataları tekrar görüntülemek için View'a göndeririz           
+			return View(model); // Hataları tekrar görüntülemek için View'a göndeririz           
         }
 
         //Şifreyi hash'leme fonksiyonu (PBKDF2 ile)
@@ -98,7 +90,7 @@ namespace School.Controllers
             var userInfo = Request.Cookies["UserInfo"]; //buraya iki if koymamın sebebi şu, çerez dolu olabilir ama kullanıcı bilgileri bir ihtimal değişirse hata mesajını düzgün görmek için
             if (userInfo != null && _accountService.UserLoginControl(userInfo) is { } user) //Çerez Boş Değilse Ve UserLoginControl null dönmüyorsa yani çerezdeki veri doğruysa ekstra güvenlik kontrolü
             {
-                SetUserCookie(user.Username, user.Email, false);
+                SetUserCookie(user.Email,user.Name,user.Surname, false);
                 return RedirectToAction("Index", "Home");
             }
 
@@ -111,14 +103,14 @@ namespace School.Controllers
 
         [HttpPost]//Sunucuya veri göndermek için kullanılır. Genellikle form gönderme işlemlerinde kullanılır.
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(User model, bool RememberMe)
+        public async Task<IActionResult> Login(NewUsers model, bool RememberMe)
         {
             // İlk olarak ModelState'i temizliyoruz
             ModelState.Clear();
 
-            // Kullanıcı adı doğrulaması
-            if (string.IsNullOrEmpty(model.Username))
-                ModelState.AddModelError("Username", "Kullanıcı adı veya E-posta gereklidir.");
+            //// Kullanıcı adı doğrulaması
+            //if (string.IsNullOrEmpty(model.Username))
+            //    ModelState.AddModelError("Username", "Kullanıcı adı veya E-posta gereklidir.");
 
             // Parola doğrulaması
             if (string.IsNullOrEmpty(model.Password))
@@ -128,7 +120,7 @@ namespace School.Controllers
             if (!ModelState.IsValid)
                 return View(model); // Hatalarla geri döneriz
 
-            var user = _accountService.UserLogin(model.Username, model.Password);
+            var user = _accountService.UserLogin(model.Email, model.Password);
 
             if (user == null || !user.IsActive)
             {
@@ -137,7 +129,7 @@ namespace School.Controllers
             }
 
             // Çerezi manuel olarak ayarlıyoruz
-            await SetUserCookie(user.Username, user.Email, RememberMe);
+            await SetUserCookie(user.Email,user.Name,user.Surname, RememberMe);
 
             ///Adminmi Standart Kullanıcımı Onu Kontrol Ediyoruz
             /// 2=Standart,1=Admin
@@ -148,9 +140,9 @@ namespace School.Controllers
             return RedirectToAction("Student", "Home");
         }
 
-        public async Task SetUserCookie(string username, string email, bool rememberMe)
+        public async Task SetUserCookie(string email,string name,string surname, bool rememberMe)
         {
-            await _accountService.SetUserCookieAsync(username, email, rememberMe);
+            await _accountService.SetUserCookieAsync(email,name,surname, rememberMe);
         }
 
         public async Task<IActionResult> Logout()
@@ -199,18 +191,18 @@ namespace School.Controllers
                 return View();
             }
 
-            Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
+            //Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
 
-            return View(new User { ResetPasswordToken = token });
+            return View(new NewPasswordHistory { Token = token });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmPassword(User model)
+        public async Task<IActionResult> ConfirmPassword(NewUsers model,NewPasswordHistory tokenn)
         {
             ModelState.Clear();
 
-            if (_accountService.ResetPassword(model.ResetPasswordToken, model.Password, model.ConfirmPassword, out string errorMessage))
+            if (_accountService.ResetPassword(tokenn.Token, model.Password, model.ConfirmPassword, out string errorMessage))
             {
                 ViewBag.SuccessMessage = "Şifreniz başarıyla sıfırlandı.";
                 return RedirectToAction("Login", "Account");
@@ -227,7 +219,7 @@ namespace School.Controllers
         [HttpGet]
         public async Task<IActionResult> ActivateAndRedirect(string email)//Bu Method Bir Sayfaya Bağlı Çalışmaz.Arka Planda Tetiklendiğinde Çalışır
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
                 _logger.LogInformation("ÖMER: {Email}", email);

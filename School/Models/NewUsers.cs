@@ -3,33 +3,33 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace School.Models
 {
-    public class NewUser
+    public class NewUsers
     {
         public int Id { get; set; }  // Kullanıcının benzersiz ID'si
 
-        [Required(ErrorMessage = "Kullanıcı adı gereklidir."), EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi girin.")]
+        [Required(ErrorMessage = "E-Posta gereklidir."), EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi girin.")]
         public string Email { get; set; }  // Kullanıcının e-posta adresi
 
-        [Required(ErrorMessage = "Kullanıcı adı gereklidir.")]
+        [Required(ErrorMessage = "Ad gereklidir.")]
         public string Name { get; set; }  // Kullanıcının e-posta adresi
 
-        [Required(ErrorMessage = "Kullanıcı adı gereklidir.")]
+        [Required(ErrorMessage = "Soyad gereklidir.")]
         public string Surname { get; set; }  // Kullanıcının e-posta adresi
 
-        public string PasswordHash { get; set; } //Bu, kullanıcının şifresinin hash'lenmiş halini tutar
+        public string? PasswordHash { get; set; } //Bu, kullanıcının şifresinin hash'lenmiş halini tutar
 
-        public string PasswordSalt { get; set; } //Bu, aynı şifrelerin bile farklı hash'lerle şifrelenmesini sağlar
+        public string? PasswordSalt { get; set; } //Bu, aynı şifrelerin bile farklı hash'lerle şifrelenmesini sağlar
 
-        public DateTime CreateDate { get; set; } = DateTime.UtcNow;  // Kullanıcının kayıt olma tarihi
+        public DateTime CreateDate { get; set; } = DateTime.Now;  // Kullanıcının kayıt olma tarihi
 
         public bool IsActive { get; set; } = true; // Varsayılan olarak aktif
 
         public bool IsDeleted { get; set; } = false; // Varsayılan olarak silinmemiş
 
-        public int? LoginErrorNumber { get; set; }
+        public int? LoginErrorNumber { get; set; } = 0;
 
         [Phone(ErrorMessage = "Geçerli bir numara girin.")]
-        public string? PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
 
         public bool IsEmailConfirmed { get; set; } = false;  // Kullanıcının e-posta doğrulandı mı?
 

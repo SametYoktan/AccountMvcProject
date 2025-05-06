@@ -34,20 +34,20 @@ namespace School.Services
         }
 
         #region YARDIMCI METOTLAR
-        public bool UserIsnameControl(string username)
+        public bool UserIsnameControl(string email)
         {
-            return _context.Users.Any(u => u.Username == username);
+            return _context._NewUsers.Any(u => u.Email == email);
         }
 
         public bool UserIsEmailControl(string email)
         {
-            return _context.Users.Any(u => u.Email == email);
+            return _context._NewUsers.Any(u => u.Email == email);
         }
 
         //Burası Kullanıcı Adı Ve Mail'i Direk Çerezdeki Veriden Çekiyor Textboxtan Değil O yüzden model.Username Yazmadık
-        public User? UserIsnameAndEmailControl(string username, string email)
+        public NewUsers? UserIsnameAndEmailControl(string username, string email)
         {
-            return _context.Users.FirstOrDefault(u => u.Username == username || u.Email == email);
+            return _context._NewUsers.FirstOrDefault(u => u.Email == email || u.Email == email);
         }
 
         public string HashPassword(string password, string salt)
@@ -69,13 +69,13 @@ namespace School.Services
             }
         }
 
-        public void UserLoginTime(User user)
+        public void UserLoginTime(NewUsers user)
         {
             DateTime authTime = DateTime.UtcNow;
             Console.WriteLine(">>>>> GİRİŞ ZAMANI: " + authTime.ToLocalTime());
-            user.LastLogin = authTime.ToLocalTime();
+            //user.LastLogin = authTime.ToLocalTime();
             _context.SaveChanges();
-            _logger.LogInformation("Kullanıcı giriş yaptı: {Username}, Giriş Zamanı: {AuthTime}", user.Username, authTime);  // Loglama ekliyoruz
+            //_logger.LogInformation("Kullanıcı giriş yaptı: {Username}, Giriş Zamanı: {AuthTime}", user.Username, authTime);  // Loglama ekliyoruz
         }
 
         public async Task UserLogOutAsync()
@@ -89,7 +89,7 @@ namespace School.Services
             _logger.LogInformation("Kullanıcı çıkış yaptı: {Username}", httpContext.User.Identity?.Name); // Loglama ekliyoruz
         }
 
-        void AccountUnlockMail(User user,string usernameOrEmail) //interface olarak tanımlamadık çünkü sadece burada kullanacağız
+        void AccountUnlockMail(NewUsers user,string usernameOrEmail) //interface olarak tanımlamadık çünkü sadece burada kullanacağız
         {
             _logger.LogWarning("Kilitli Hesabı Açma Talebi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
             var activationLink = $"https://localhost:7070/Account/ActivateAndRedirect?email={user.Email}";
@@ -100,25 +100,25 @@ namespace School.Services
         }
         #endregion
 
-        public void UserRegister(User model)
+        public void UserRegister(NewUsers model)
         {
             try
             {
-                string salt = GenerateSalt();
+				string salt = GenerateSalt();
                 string hashedPassword = HashPassword(model.Password, salt);
                 model.PasswordSalt = salt;
                 model.PasswordHash = hashedPassword;
-                _context.Users.Add(model);
+                _context._NewUsers.Add(model);
                 _context.SaveChanges();
-                _logger.LogInformation("Yeni kullanıcı kaydedildi: {Username}", model.Username);  // Loglama ekliyoruz
+                _logger.LogInformation("Yeni kullanıcı kaydedildi: {Username}", model.Email);  // Loglama ekliyoruz
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Kullanıcı kaydı sırasında hata oluştu! Kullanıcı adı: {Username}", model.Username);  // Hata loglama
+				_logger.LogError(ex, "Kullanıcı kaydı sırasında hata oluştu! Kullanıcı adı: {Username}", model.Email);  // Hata loglama
             }
         }
 
-        public User? UserLoginControl(string userInfo)
+        public NewUsers? UserLoginControl(string userInfo)
         {
             if (string.IsNullOrEmpty(userInfo))
                 return null;
@@ -141,7 +141,7 @@ namespace School.Services
             return user;
         }//LOGİN GET
 
-        public User? UserLogin(string usernameOrEmail, string password)//LOGİN POST
+        public NewUsers? UserLogin(string usernameOrEmail, string password)//LOGİN POST
         {
             var user = UserIsnameAndEmailControl(usernameOrEmail, usernameOrEmail);
 
@@ -191,11 +191,11 @@ namespace School.Services
             }
         }
 
-        public async Task SetUserCookieAsync(string username, string email, bool rememberMe)
+        public async Task SetUserCookieAsync(string email,string name,string surname, bool rememberMe)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Name, name+" "+surname),
                 new Claim(ClaimTypes.Email, email)
             };
 
@@ -210,7 +210,7 @@ namespace School.Services
             if (httpContext != null)
             {
                 await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-                _logger.LogInformation("Kullanıcı giriş yaptı: {Username}, E-posta: {Email}", username, email);
+                _logger.LogInformation("Kullanıcı giriş yaptı: E-posta: {Email}", email);
 
                 if (rememberMe)
                 {
@@ -222,8 +222,8 @@ namespace School.Services
                         SameSite = SameSiteMode.Lax
                     };
 
-                    httpContext.Response.Cookies.Append("UserInfo", $"{username}|{email}", cookieOptions);
-                    _logger.LogInformation("UserInfo çerezi oluşturuldu: {Username}, {Email}", username, email);
+                    httpContext.Response.Cookies.Append("UserInfo", $"{email}", cookieOptions);
+                    _logger.LogInformation("UserInfo çerezi oluşturuldu: {Email}", email);
                 }
             }
         }
@@ -236,7 +236,7 @@ namespace School.Services
                 return false;
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
             Console.WriteLine($"DEBUG: Gelen e-posta adresi: {email}");
 
             if (user == null)
@@ -246,12 +246,14 @@ namespace School.Services
                 await Task.Delay(new Random().Next(1500, 3000));
                 return true;
             }
+			var user2 = _context._NewPasswordHistory.FirstOrDefault();
 
-            _logger.LogInformation("Şifre sıfırlama talebi: {Email}", email);
+			_logger.LogInformation("Şifre sıfırlama talebi: {Email}", email);
             // Şifre sıfırlama token'ı oluştur
             string resetToken = Guid.NewGuid().ToString();
-            user.ResetPasswordToken = resetToken;
-            user.ResetPasswordTokenExpiry = DateTime.UtcNow.AddMinutes(60);
+            user2.UserId=user.Id;
+			user2.Token = resetToken;
+			user2.ExpiryDate = DateTime.UtcNow.AddMinutes(60);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Şifre sıfırlama token'ı oluşturuldu: {ResetToken} Kullanıcı: {Email}", resetToken, email);
 
@@ -274,12 +276,12 @@ namespace School.Services
             return true;
         }
 
-        public User? GetUserByResetToken(string token)
+        public NewPasswordHistory? GetUserByResetToken(string token)
         {
             if (string.IsNullOrEmpty(token))
                 return null;
 
-            return _context.Users.FirstOrDefault(u => u.ResetPasswordToken == token && u.ResetPasswordTokenExpiry > DateTime.UtcNow);
+            return _context._NewPasswordHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.UtcNow);
         }
 
         public bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage)
@@ -293,19 +295,22 @@ namespace School.Services
                 return false;
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.ResetPasswordToken == token && u.ResetPasswordTokenExpiry > DateTime.UtcNow);
+            var PasswordToken = _context._NewPasswordHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.UtcNow);
 
-            Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
+            //Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
 
-            if (user == null)
+            if (PasswordToken == null)
             {
                 errorMessage = "Geçersiz veya süresi dolmuş token.";
                 _logger.LogWarning("Token geçersiz veya süresi dolmuş: {Token}", token);  // Uyarı loglama
                 return false;
             }
 
-            // Şifre kontrolleri
-            if (string.IsNullOrEmpty(newPassword))
+			var user2 = _context._NewUsers.FirstOrDefault();
+
+
+			// Şifre kontrolleri
+			if (string.IsNullOrEmpty(newPassword))
             {
                 errorMessage = "Parola gereklidir.";
                 return false;
@@ -340,15 +345,15 @@ namespace School.Services
             string salt = GenerateSalt();
             string hashedPassword = HashPassword(newPassword, salt);
 
-            user.PasswordHash = hashedPassword;
-            user.PasswordSalt = salt;
-            user.ResetPasswordToken = null;
-            user.ResetPasswordTokenExpiry = null;
+            user2.PasswordHash = hashedPassword;
+            user2.PasswordSalt = salt;
+            //user.Token = null;
+            //user.ExpiryDate = null;
 
             _context.SaveChanges();
             errorMessage = "Şifreniz başarıyla sıfırlandı.";
             Console.WriteLine("Şifreniz başarıyla sıfırlandı.");
-            _logger.LogInformation("Şifre başarıyla sıfırlandı: {Username}", user.Username);
+            _logger.LogInformation("Şifre başarıyla sıfırlandı: {Email}", user2.Email);
             return true;
         }
     }
