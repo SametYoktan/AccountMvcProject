@@ -71,7 +71,6 @@ namespace School.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
-                    _newuserId = table.Column<int>(type: "int", nullable: false),
                     UserEmail = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     MailType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -81,8 +80,8 @@ namespace School.Migrations
                 {
                     table.PrimaryKey("PK__NewEmailHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK__NewEmailHistory__NewUsers__newuserId",
-                        column: x => x._newuserId,
+                        name: "FK__NewEmailHistory__NewUsers_UserID",
+                        column: x => x.UserID,
                         principalTable: "_NewUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -95,7 +94,6 @@ namespace School.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
-                    _newuserId = table.Column<int>(type: "int", nullable: false),
                     LoginTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LogoutTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
@@ -104,8 +102,8 @@ namespace School.Migrations
                 {
                     table.PrimaryKey("PK__NewLoginHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK__NewLoginHistory__NewUsers__newuserId",
-                        column: x => x._newuserId,
+                        name: "FK__NewLoginHistory__NewUsers_UserID",
+                        column: x => x.UserID,
                         principalTable: "_NewUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -118,7 +116,6 @@ namespace School.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
-                    _newuserId = table.Column<int>(type: "int", nullable: false),
                     Token = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     IsUsed = table.Column<bool>(type: "bit", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -128,8 +125,8 @@ namespace School.Migrations
                 {
                     table.PrimaryKey("PK__NewPasswordHistory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK__NewPasswordHistory__NewUsers__newuserId",
-                        column: x => x._newuserId,
+                        name: "FK__NewPasswordHistory__NewUsers_UserID",
+                        column: x => x.UserID,
                         principalTable: "_NewUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -142,7 +139,6 @@ namespace School.Migrations
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
-                    _newuserId = table.Column<int>(type: "int", nullable: false),
                     ActionType = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     ActionDescription = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     ActionTime = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -151,8 +147,8 @@ namespace School.Migrations
                 {
                     table.PrimaryKey("PK__NewUserActivityLog", x => x.ID);
                     table.ForeignKey(
-                        name: "FK__NewUserActivityLog__NewUsers__newuserId",
-                        column: x => x._newuserId,
+                        name: "FK__NewUserActivityLog__NewUsers_UserID",
+                        column: x => x.UserID,
                         principalTable: "_NewUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -165,7 +161,6 @@ namespace School.Migrations
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
-                    _newuserId = table.Column<int>(type: "int", nullable: false),
                     IsUsed = table.Column<bool>(type: "bit", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -173,8 +168,8 @@ namespace School.Migrations
                 {
                     table.PrimaryKey("PK__NewUserIsActiveHistory", x => x.ID);
                     table.ForeignKey(
-                        name: "FK__NewUserIsActiveHistory__NewUsers__newuserId",
-                        column: x => x._newuserId,
+                        name: "FK__NewUserIsActiveHistory__NewUsers_UserID",
+                        column: x => x.UserID,
                         principalTable: "_NewUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -187,62 +182,60 @@ namespace School.Migrations
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
-                    _newuserId = table.Column<int>(type: "int", nullable: false),
                     RoleID = table.Column<int>(type: "int", nullable: false),
-                    _roleId = table.Column<int>(type: "int", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK__NewUserRoles", x => x.ID);
                     table.ForeignKey(
-                        name: "FK__NewUserRoles__NewRoles__roleId",
-                        column: x => x._roleId,
+                        name: "FK__NewUserRoles__NewRoles_RoleID",
+                        column: x => x.RoleID,
                         principalTable: "_NewRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK__NewUserRoles__NewUsers__newuserId",
-                        column: x => x._newuserId,
+                        name: "FK__NewUserRoles__NewUsers_UserID",
+                        column: x => x.UserID,
                         principalTable: "_NewUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX__NewEmailHistory__newuserId",
+                name: "IX__NewEmailHistory_UserID",
                 table: "_NewEmailHistory",
-                column: "_newuserId");
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX__NewLoginHistory__newuserId",
+                name: "IX__NewLoginHistory_UserID",
                 table: "_NewLoginHistory",
-                column: "_newuserId");
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX__NewPasswordHistory__newuserId",
+                name: "IX__NewPasswordHistory_UserID",
                 table: "_NewPasswordHistory",
-                column: "_newuserId");
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX__NewUserActivityLog__newuserId",
+                name: "IX__NewUserActivityLog_UserID",
                 table: "_NewUserActivityLog",
-                column: "_newuserId");
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX__NewUserIsActiveHistory__newuserId",
+                name: "IX__NewUserIsActiveHistory_UserID",
                 table: "_NewUserIsActiveHistory",
-                column: "_newuserId");
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX__NewUserRoles__newuserId",
+                name: "IX__NewUserRoles_RoleID",
                 table: "_NewUserRoles",
-                column: "_newuserId");
+                column: "RoleID");
 
             migrationBuilder.CreateIndex(
-                name: "IX__NewUserRoles__roleId",
+                name: "IX__NewUserRoles_UserID",
                 table: "_NewUserRoles",
-                column: "_roleId");
+                column: "UserID");
         }
 
         /// <inheritdoc />

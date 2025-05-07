@@ -86,7 +86,7 @@ namespace School.Models
         public List<NewUserRoles> UserRoles { get; set; } = new List<NewUserRoles>();
 
         // Kullanıcının block unblock bilgilerini tutar
-        public List<NewUserActivityLog> UserActivityLog { get; set; } = new List<NewUserActivityLog>();
+        public List<NewUserActionLog> UserActivityLog { get; set; } = new List<NewUserActionLog>();
 
         // Kullanıcının block unblock bilgilerini tutar
         public List<NewUserIsActiveHistory> UserActivityHistory { get; set; } = new List<NewUserIsActiveHistory>();

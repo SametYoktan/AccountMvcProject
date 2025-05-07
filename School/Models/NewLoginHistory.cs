@@ -9,10 +9,10 @@ namespace School.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Kullanıcı ID'si boş bırakılamaz.")]
-        [ForeignKey("NewUsers")]
         public int UserID { get; set; }
 
-        public NewUsers _newuser { get; set; }  // Navigation property
+        [ForeignKey("UserID")]
+        public NewUsers User { get; set; }  // Navigation property
 
         public DateTime LoginTime { get; set; } = DateTime.Now;
 

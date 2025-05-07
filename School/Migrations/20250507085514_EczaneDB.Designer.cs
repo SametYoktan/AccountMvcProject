@@ -12,7 +12,7 @@ using School.Models;
 namespace School.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20250507080602_EczaneDB")]
+    [Migration("20250507085514_EczaneDB")]
     partial class EczaneDB
     {
         /// <inheritdoc />
@@ -54,12 +54,9 @@ namespace School.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.Property<int>("_newuserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("_newuserId");
+                    b.HasIndex("UserID");
 
                     b.ToTable("_NewEmailHistory");
                 });
@@ -86,12 +83,9 @@ namespace School.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.Property<int>("_newuserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("_newuserId");
+                    b.HasIndex("UserID");
 
                     b.ToTable("_NewLoginHistory");
                 });
@@ -121,12 +115,9 @@ namespace School.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.Property<int>("_newuserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("_newuserId");
+                    b.HasIndex("UserID");
 
                     b.ToTable("_NewPasswordHistory");
                 });
@@ -181,12 +172,9 @@ namespace School.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.Property<int>("_newuserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ID");
 
-                    b.HasIndex("_newuserId");
+                    b.HasIndex("UserID");
 
                     b.ToTable("_NewUserActivityLog");
                 });
@@ -208,12 +196,9 @@ namespace School.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.Property<int>("_newuserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ID");
 
-                    b.HasIndex("_newuserId");
+                    b.HasIndex("UserID");
 
                     b.ToTable("_NewUserIsActiveHistory");
                 });
@@ -235,17 +220,11 @@ namespace School.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
-                    b.Property<int>("_newuserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("_roleId")
-                        .HasColumnType("int");
-
                     b.HasKey("ID");
 
-                    b.HasIndex("_newuserId");
+                    b.HasIndex("RoleID");
 
-                    b.HasIndex("_roleId");
+                    b.HasIndex("UserID");
 
                     b.ToTable("_NewUserRoles");
                 });
@@ -330,76 +309,76 @@ namespace School.Migrations
 
             modelBuilder.Entity("School.Models.NewEmailHistory", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", "_newuser")
+                    b.HasOne("School.Models.NewUsers", "User")
                         .WithMany("EmailHistoriesTokens")
-                        .HasForeignKey("_newuserId")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("_newuser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("School.Models.NewLoginHistory", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", "_newuser")
+                    b.HasOne("School.Models.NewUsers", "User")
                         .WithMany("LoginHistories")
-                        .HasForeignKey("_newuserId")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("_newuser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("School.Models.NewPasswordHistory", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", "_newuser")
+                    b.HasOne("School.Models.NewUsers", "User")
                         .WithMany("ResetHistoriesTokens")
-                        .HasForeignKey("_newuserId")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("_newuser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("School.Models.NewUserActivityLog", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", "_newuser")
+                    b.HasOne("School.Models.NewUsers", "User")
                         .WithMany("UserActivityLog")
-                        .HasForeignKey("_newuserId")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("_newuser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("School.Models.NewUserIsActiveHistory", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", "_newuser")
+                    b.HasOne("School.Models.NewUsers", "User")
                         .WithMany("UserActivityHistory")
-                        .HasForeignKey("_newuserId")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("_newuser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("School.Models.NewUserRoles", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", "_newuser")
+                    b.HasOne("School.Models.NewRoles", "Role")
                         .WithMany("UserRoles")
-                        .HasForeignKey("_newuserId")
+                        .HasForeignKey("RoleID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("School.Models.NewRoles", "_role")
+                    b.HasOne("School.Models.NewUsers", "User")
                         .WithMany("UserRoles")
-                        .HasForeignKey("_roleId")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("_newuser");
+                    b.Navigation("Role");
 
-                    b.Navigation("_role");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("School.Models.NewRoles", b =>

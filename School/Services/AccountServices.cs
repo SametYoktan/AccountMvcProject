@@ -14,6 +14,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Azure;
 using System.Text.RegularExpressions;
+using School.Models.Enums;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace School.Services
@@ -81,12 +83,42 @@ namespace School.Services
         public async Task UserLogOutAsync()
         {
             var httpContext = _httpContextAccessor.HttpContext;
-            await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // Kullanıcıyı çıkış yaptıktan sonra çerezleri temizliyoruz
-            httpContext.Response.Cookies.Delete("UserInfo"); // AuthTime ve diğer kullanıcı bilgilerini içeren çerezi sil
-            httpContext.Response.Cookies.Delete(".AspNetCore.Cookies"); // Bu çerez, ASP.NET Core kimlik doğrulama çerezi
-            _logger.LogInformation("Kullanıcı çıkış yaptı: {Username}", httpContext.User.Identity?.Name); // Loglama ekliyoruz
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                var email = httpContext.User.FindFirst(ClaimTypes.Email)?.Value;
+
+                var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
+                if (user != null)
+                {
+                    //Varolan en son giriş kaydını al
+                    var lastLogin = await _context._NewLoginHistory
+                 .Where(l => l.UserID == user.Id && l.LogoutTime == null)
+                 .OrderByDescending(l => l.LoginTime)
+                 .FirstOrDefaultAsync();
+
+                    // Yeni çıkış kaydı oluştur
+                    var create_logout_history = new NewLoginHistory
+                    {
+                        UserID = user.Id,
+                        LoginTime = lastLogin.LoginTime,
+                        LogoutTime = DateTime.Now,
+                        Type = LoginEnum.Cikis.ToString()
+                    };
+                    await _context._NewLoginHistory.AddAsync(create_logout_history);
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation("Kullanıcı için çıkış kaydı oluşturuldu: {Username}", user.Email);
+                }
+
+                await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+                // Çerezleri temizle
+                httpContext.Response.Cookies.Delete("UserInfo");
+                httpContext.Response.Cookies.Delete(".AspNetCore.Cookies");
+
+                _logger.LogInformation("Kullanıcı çıkış yaptı: {Username}", httpContext.User.Identity.Name);
+            }
         }
 
         void AccountUnlockMail(NewUsers user,string usernameOrEmail) //interface olarak tanımlamadık çünkü sadece burada kullanacağız
@@ -96,6 +128,17 @@ namespace School.Services
             var emailBody = $"Hesabınızı aktifleştirmek için aşağıdaki bağlantıya tıklayın:<br><br> <a href='{activationLink}'>Hesabı Aktifleştir</a>";
             //var emailBody = $"Hesabınız Şüpheli Giriş Nedeniyle Kilitlendi Kilidi Açmak için bağlantıya tıklayın:<br><br> <a href=''>Hesabınız Kilitlendi</a>";
             _emailService.SendEmailAsync(user.Email, "Hesabınız Kilitlendi", emailBody);
+
+            var create_email_history = new NewEmailHistory
+            {
+                UserID = user.Id,
+                UserEmail = user.Email,
+                Description = user.Email + " Hesabının " + EmailDescriptionEnum.Hesap_Kilitlendi_Maili_Gönderildi.ToString(),
+                MailType = EmailTypeEnum.Account.ToString()
+            };
+            _context._NewEmailHistory.Add(create_email_history);
+            _context.SaveChanges();
+
             _logger.LogWarning("Kilitli Hesaba Ait E-mail Adresine Unlock Maili Gönderildi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
         }
         #endregion
@@ -111,6 +154,15 @@ namespace School.Services
                 _context._NewUsers.Add(model);
                 _context.SaveChanges();
                 _logger.LogInformation("Yeni kullanıcı kaydedildi: {Username}", model.Email);  // Loglama ekliyoruz
+
+                var create_user_role = new NewUserRoles
+                {
+                    UserID = model.Id,
+                    RoleID = (int)UserRolesEnum.Standard //Standart Rol İle Kayıt Oluştur
+                };
+                _context._NewUserRoles.Add(create_user_role);
+                _context.SaveChanges();
+                _logger.LogInformation("Yeni kullanıcı NewUserRole tablosuna standart rol kayıtı yapıldı: {Username}", model.Email);  // Loglama ekliyoruz
             }
             catch (Exception ex)
             {
@@ -181,6 +233,15 @@ namespace School.Services
             try
             {
                 UserLoginTime(user);
+
+                var create_login_history = new NewLoginHistory
+                {
+                    UserID = user.Id,
+                    Type = LoginEnum.Giris.ToString()
+                };
+                _context._NewLoginHistory.Add(create_login_history);
+                _context.SaveChanges();
+
                 _logger.LogInformation("Başarılı giriş: {UsernameOrEmail}", usernameOrEmail);  // Başarılı giriş
                 return user;
             }
@@ -269,7 +330,18 @@ namespace School.Services
 			try
 			{
 				await _emailService.SendEmailAsync(email, "Şifre Sıfırlama", emailBody);
-				_logger.LogInformation("Şifre sıfırlama e-postası yollandı: {Email}", email);
+
+                var create_email_history = new NewEmailHistory
+                {
+                    UserID = user.Id,
+                    UserEmail = email,
+                    Description = email + " Hesabının " + EmailDescriptionEnum.Şifre_Sıfırlama_Maili_Gönderildi.ToString(),
+                    MailType = EmailTypeEnum.PassWord.ToString()
+                };
+                _context._NewEmailHistory.Add(create_email_history);
+                _context.SaveChanges();
+
+                _logger.LogInformation("Şifre sıfırlama e-postası yollandı: {Email}", email);
 			}
 			catch (Exception ex)
 			{
@@ -358,6 +430,7 @@ namespace School.Services
 
 			// Token’ı devre dışı bırak
 			PasswordToken.ExpiryDate = DateTime.UtcNow.AddMinutes(-1);
+            PasswordToken.IsUsed = true;
 
 			_context.SaveChanges();
 

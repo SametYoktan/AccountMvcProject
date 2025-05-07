@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace School.Models
 {
-	public class NewUserActivityLog
+	public class NewUserActionLog
 	{
         [Key]
         public int ID { get; set; }
 
         [Required(ErrorMessage = "Kullanıcı ID'si boş bırakılamaz.")]
-        [ForeignKey("NewUsers")]
         public int UserID { get; set; }
 
-        public NewUsers _newuser { get; set; }  // Navigation property
+        [ForeignKey("UserID")]
+        public NewUsers User { get; set; }  // Navigation property
 
         [Required(ErrorMessage = "İşlem türü boş bırakılamaz.")]
         [StringLength(200, ErrorMessage = "İşlem türü en fazla 200 karakter olabilir.")]
