@@ -192,9 +192,10 @@ namespace School.Controllers
                 return View();
             }
 
-            //Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
+			Console.WriteLine(user.UserID + " " + user.Token + " Bitiş Süresi " + user.ExpiryDate + " Şuanki Zaman " + DateTime.Now);
+            // Token ve user bilgilerini view'e gönder
 
-            return View(new NewPasswordHistory { Token = token });
+            return View();
         }
 
         [HttpPost]

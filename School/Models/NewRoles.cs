@@ -1,16 +1,22 @@
-﻿namespace School.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace School.Models
 {
-	public class NewRoles
-	{
-		// Rolün benzersiz kimliği
-		public int ID { get; set; }
+    public class NewRoles
+    {
+        [Key]
+        public int Id { get; set; }
 
-		// Rolün adı (Örnek: Admin, User, Moderator vs.)
-		public string Name { get; set; }
+        [Required(ErrorMessage = "Rol adı boş bırakılamaz.")]
+        [StringLength(50, ErrorMessage = "Rol adı en fazla 50 karakter olabilir.")]
+        public string Name { get; set; }
 
-		// Rolün açıklaması
-		public string Description { get; set; }
+        [StringLength(250, ErrorMessage = "Açıklama en fazla 250 karakter olabilir.")]
+        public string Description { get; set; }
 
-		public DateTime CreateDate { get; set; } = DateTime.Now;  // Rolün kayıt tarihi
-	}
+        public DateTime CreateDate { get; set; } = DateTime.Now;
+
+        // İlişki: Bu role ait kullanıcı-rol ilişkileri
+        public ICollection<NewUserRoles> UserRoles { get; set; } = new List<NewUserRoles>();
+    }
 }

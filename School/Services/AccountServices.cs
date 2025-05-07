@@ -228,133 +228,141 @@ namespace School.Services
             }
         }
 
-        public async Task<bool> ForgotPassword(string email)
-        {
-            if (string.IsNullOrEmpty(email) || !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-            {
-                _logger.LogWarning("Geçersiz e-posta formatı: {Email}", email); // Uyarı loglama
-                return false;
-            }
+		public async Task<bool> ForgotPassword(string email)
+		{
+			if (string.IsNullOrEmpty(email) || !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+			{
+				_logger.LogWarning("Geçersiz e-posta formatı: {Email}", email);
+				return false;
+			}
 
-            var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
-            Console.WriteLine($"DEBUG: Gelen e-posta adresi: {email}");
+			var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
+			Console.WriteLine($"DEBUG: Gelen e-posta adresi: {email}");
 
-            if (user == null)
-            {
-                _logger.LogWarning("Şifre sıfırlama talebi, kullanıcı bulunamadı: {Email}", email); // Hata loglama
-                // Kullanıcı bulunamasa bile rastgele gecikme ile mesaj dön
-                await Task.Delay(new Random().Next(1500, 3000));
-                return true;
-            }
-			var user2 = _context._NewPasswordHistory.FirstOrDefault();
+			if (user == null)
+			{
+				_logger.LogWarning("Şifre sıfırlama talebi, kullanıcı bulunamadı: {Email}", email);
+				await Task.Delay(new Random().Next(1500, 3000));
+				return true;
+			}
 
 			_logger.LogInformation("Şifre sıfırlama talebi: {Email}", email);
-            // Şifre sıfırlama token'ı oluştur
-            string resetToken = Guid.NewGuid().ToString();
-            user2.UserId=user.Id;
-			user2.Token = resetToken;
-			user2.ExpiryDate = DateTime.UtcNow.AddMinutes(60);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Şifre sıfırlama token'ı oluşturuldu: {ResetToken} Kullanıcı: {Email}", resetToken, email);
 
-            // Şifre sıfırlama linki oluştur
-            var resetLink = $"https://localhost:7070/Account/ConfirmPassword?token={resetToken}";
-            var emailBody = $"Şifrenizi sıfırlamak için bağlantıya tıklayın:<br><br> <a href='{resetLink}'>Şifreyi Sıfırla</a>";
+			// Yeni şifre sıfırlama token'ı oluşturuluyor
+			string resetToken = Guid.NewGuid().ToString();
+			var token = new NewPasswordHistory
+			{
+				UserID = user.Id,
+				Token = resetToken,
+				ExpiryDate = DateTime.Now.AddMinutes(60)
+			};
 
-            try
-            {
-                await _emailService.SendEmailAsync(email, "Şifre Sıfırlama", emailBody);
-                _logger.LogInformation("Şifre sıfırlama e-postası yollandı: {Email}", email);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogInformation("E-posta gönderme hatası: {Email}" + " " + email, ex.Message);
-                Console.WriteLine("E-posta gönderme hatası: " + ex.Message);
-                return false;
-            }
+			_context._NewPasswordHistory.Add(token);
+			await _context.SaveChangesAsync();
 
-            return true;
-        }
+			_logger.LogInformation("Şifre sıfırlama token'ı oluşturuldu: {ResetToken} Kullanıcı: {Email}", resetToken, email);
 
-        public NewPasswordHistory? GetUserByResetToken(string token)
+			// Şifre sıfırlama linki oluşturuluyor
+			var resetLink = $"https://localhost:7070/Account/ConfirmPassword?token={resetToken}";
+			var emailBody = $"Şifrenizi sıfırlamak için bağlantıya tıklayın:<br><br> <a href='{resetLink}'>Şifreyi Sıfırla</a>";
+
+			try
+			{
+				await _emailService.SendEmailAsync(email, "Şifre Sıfırlama", emailBody);
+				_logger.LogInformation("Şifre sıfırlama e-postası yollandı: {Email}", email);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "E-posta gönderme hatası: {Email}", email);
+				Console.WriteLine("E-posta gönderme hatası: " + ex.Message);
+				return false;
+			}
+
+			return true;
+		}
+
+		public NewPasswordHistory? GetUserByResetToken(string token)
         {
             if (string.IsNullOrEmpty(token))
                 return null;
 
-            return _context._NewPasswordHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.UtcNow);
+
+            return _context._NewPasswordHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.Now);
         }
 
-        public bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage)
-        {
-            errorMessage = string.Empty;
+		public bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage)
+		{
+			errorMessage = string.Empty;
 
             if (string.IsNullOrEmpty(token))
-            {
-                errorMessage = "Geçersiz veya süresi dolmuş token.";
-                _logger.LogWarning("Geçersiz veya süresi dolmuş token: {Token}", token);  // Uyarı loglama
-                return false;
-            }
+			{
+				errorMessage = "Geçersiz veya süresi dolmuş token.";
+                Console.WriteLine(errorMessage);
+				_logger.LogWarning("Geçersiz veya süresi dolmuş token: {Token}", token);
+				return false;
+			}
 
-            var PasswordToken = _context._NewPasswordHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.UtcNow);
+			var PasswordToken = _context._NewPasswordHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.Now);
 
-            //Console.WriteLine(user.Username + " " + user.ResetPasswordToken + " " + user.ResetPasswordTokenExpiry + " " + DateTime.UtcNow);
-
-            if (PasswordToken == null)
-            {
-                errorMessage = "Geçersiz veya süresi dolmuş token.";
-                _logger.LogWarning("Token geçersiz veya süresi dolmuş: {Token}", token);  // Uyarı loglama
-                return false;
-            }
-
-			var user2 = _context._NewUsers.FirstOrDefault();
-
+			if (PasswordToken == null)
+			{
+				errorMessage = "Geçersiz veya süresi dolmuş token.";
+				_logger.LogWarning("Token geçersiz veya süresi dolmuş: {Token}", token);
+				return false;
+			}
+			var user2 = _context._NewUsers.FirstOrDefault(u => u.Id == PasswordToken.UserID);
+			if (user2 == null)
+			{
+				errorMessage = "Kullanıcı bulunamadı.";
+				return false;
+			}
 
 			// Şifre kontrolleri
 			if (string.IsNullOrEmpty(newPassword))
-            {
-                errorMessage = "Parola gereklidir.";
-                return false;
-            }
+			{
+				errorMessage = "Parola gereklidir.";
+				return false;
+			}
 
-            if (string.IsNullOrEmpty(confirmPassword))
-            {
-                errorMessage = "Parolayı onaylamak gereklidir.";
-                return false;
-            }
+			if (string.IsNullOrEmpty(confirmPassword))
+			{
+				errorMessage = "Parolayı onaylamak gereklidir.";
+				return false;
+			}
 
-            if (newPassword.Length < 8)
-            {
-                errorMessage = "Parola en az 8 karakter uzunluğunda olmalıdır.";
-                return false;
-            }
+			if (newPassword.Length < 8)
+			{
+				errorMessage = "Parola en az 8 karakter uzunluğunda olmalıdır.";
+				return false;
+			}
 
-            if (!Regex.IsMatch(newPassword, @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$"))
-            {
-                errorMessage = "Parola en az bir büyük harf, bir rakam ve bir özel karakter içermelidir.";
-                return false;
-            }
+			if (!Regex.IsMatch(newPassword, @"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$"))
+			{
+				errorMessage = "Parola en az bir büyük harf, bir rakam ve bir özel karakter içermelidir.";
+				return false;
+			}
 
-            if (newPassword != confirmPassword)
-            {
-                errorMessage = "Parolalar eşleşmiyor.";
-                _logger.LogWarning("Şifre eşleşmiyor: {Token}", token);  // Loglama
-                return false;
-            }
+			if (newPassword != confirmPassword)
+			{
+				errorMessage = "Parolalar eşleşmiyor.";
+				_logger.LogWarning("Şifre eşleşmiyor: {Token}", token);
+				return false;
+			}
 
-            // Yeni şifreyi hash'le ve kaydet
-            string salt = GenerateSalt();
-            string hashedPassword = HashPassword(newPassword, salt);
+			// Şifre güncelleme
+			string salt = GenerateSalt();
+			string hashedPassword = HashPassword(newPassword, salt);
 
-            user2.PasswordHash = hashedPassword;
-            user2.PasswordSalt = salt;
-            //user.Token = null;
-            //user.ExpiryDate = null;
+			user2.PasswordHash = hashedPassword;
+			user2.PasswordSalt = salt;
 
-            _context.SaveChanges();
-            errorMessage = "Şifreniz başarıyla sıfırlandı.";
-            Console.WriteLine("Şifreniz başarıyla sıfırlandı.");
-            _logger.LogInformation("Şifre başarıyla sıfırlandı: {Email}", user2.Email);
-            return true;
-        }
-    }
+			// Token’ı devre dışı bırak
+			PasswordToken.ExpiryDate = DateTime.UtcNow.AddMinutes(-1);
+
+			_context.SaveChanges();
+
+			_logger.LogInformation("Şifre başarıyla sıfırlandı: {Email}", user2.Email);
+			return true;
+		}
+	}
 }

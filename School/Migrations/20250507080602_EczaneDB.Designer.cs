@@ -12,7 +12,7 @@ using School.Models;
 namespace School.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20250502133332_EczaneDB")]
+    [Migration("20250507080602_EczaneDB")]
     partial class EczaneDB
     {
         /// <inheritdoc />
@@ -38,25 +38,28 @@ namespace School.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("MailType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("NewUsersId")
-                        .HasColumnType("int");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UserEmail")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("_newuserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NewUsersId");
+                    b.HasIndex("_newuserId");
 
                     b.ToTable("_NewEmailHistory");
                 });
@@ -75,19 +78,20 @@ namespace School.Migrations
                     b.Property<DateTime?>("LogoutTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("NewUsersId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("_newuserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NewUsersId");
+                    b.HasIndex("_newuserId");
 
                     b.ToTable("_NewLoginHistory");
                 });
@@ -100,7 +104,7 @@ namespace School.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ExpiryDate")
@@ -109,43 +113,46 @@ namespace School.Migrations
                     b.Property<bool>("IsUsed")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("NewUsersId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Token")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("_newuserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NewUsersId");
+                    b.HasIndex("_newuserId");
 
                     b.ToTable("_NewPasswordHistory");
                 });
 
             modelBuilder.Entity("School.Models.NewRoles", b =>
                 {
-                    b.Property<int>("ID")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("ID");
+                    b.HasKey("Id");
 
                     b.ToTable("_NewRoles");
                 });
@@ -160,19 +167,26 @@ namespace School.Migrations
 
                     b.Property<string>("ActionDescription")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime>("ActionTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("ActionType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
+                    b.Property<int>("_newuserId")
+                        .HasColumnType("int");
+
                     b.HasKey("ID");
+
+                    b.HasIndex("_newuserId");
 
                     b.ToTable("_NewUserActivityLog");
                 });
@@ -194,7 +208,12 @@ namespace School.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
+                    b.Property<int>("_newuserId")
+                        .HasColumnType("int");
+
                     b.HasKey("ID");
+
+                    b.HasIndex("_newuserId");
 
                     b.ToTable("_NewUserIsActiveHistory");
                 });
@@ -216,7 +235,17 @@ namespace School.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
+                    b.Property<int>("_newuserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("_roleId")
+                        .HasColumnType("int");
+
                     b.HasKey("ID");
+
+                    b.HasIndex("_newuserId");
+
+                    b.HasIndex("_roleId");
 
                     b.ToTable("_NewUserRoles");
                 });
@@ -234,7 +263,8 @@ namespace School.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -250,7 +280,8 @@ namespace School.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
@@ -260,65 +291,17 @@ namespace School.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RoleID")
-                        .HasColumnType("int");
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
 
                     b.Property<string>("Surname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
                     b.ToTable("_NewUsers");
-                });
-
-            modelBuilder.Entity("School.Models.PasswordReset", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpirationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PasswordResets");
-                });
-
-            modelBuilder.Entity("School.Models.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("School.Models.Student", b =>
@@ -345,57 +328,83 @@ namespace School.Migrations
                     b.ToTable("Student");
                 });
 
-            modelBuilder.Entity("School.Models.UserRole", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("UserRoles");
-                });
-
             modelBuilder.Entity("School.Models.NewEmailHistory", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", null)
+                    b.HasOne("School.Models.NewUsers", "_newuser")
                         .WithMany("EmailHistoriesTokens")
-                        .HasForeignKey("NewUsersId");
+                        .HasForeignKey("_newuserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("_newuser");
                 });
 
             modelBuilder.Entity("School.Models.NewLoginHistory", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", null)
+                    b.HasOne("School.Models.NewUsers", "_newuser")
                         .WithMany("LoginHistories")
-                        .HasForeignKey("NewUsersId");
+                        .HasForeignKey("_newuserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("_newuser");
                 });
 
             modelBuilder.Entity("School.Models.NewPasswordHistory", b =>
                 {
-                    b.HasOne("School.Models.NewUsers", null)
+                    b.HasOne("School.Models.NewUsers", "_newuser")
                         .WithMany("ResetHistoriesTokens")
-                        .HasForeignKey("NewUsersId");
-                });
-
-            modelBuilder.Entity("School.Models.UserRole", b =>
-                {
-                    b.HasOne("School.Models.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
+                        .HasForeignKey("_newuserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Role");
+                    b.Navigation("_newuser");
+                });
+
+            modelBuilder.Entity("School.Models.NewUserActivityLog", b =>
+                {
+                    b.HasOne("School.Models.NewUsers", "_newuser")
+                        .WithMany("UserActivityLog")
+                        .HasForeignKey("_newuserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("_newuser");
+                });
+
+            modelBuilder.Entity("School.Models.NewUserIsActiveHistory", b =>
+                {
+                    b.HasOne("School.Models.NewUsers", "_newuser")
+                        .WithMany("UserActivityHistory")
+                        .HasForeignKey("_newuserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("_newuser");
+                });
+
+            modelBuilder.Entity("School.Models.NewUserRoles", b =>
+                {
+                    b.HasOne("School.Models.NewUsers", "_newuser")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("_newuserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("School.Models.NewRoles", "_role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("_roleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("_newuser");
+
+                    b.Navigation("_role");
+                });
+
+            modelBuilder.Entity("School.Models.NewRoles", b =>
+                {
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("School.Models.NewUsers", b =>
@@ -405,10 +414,11 @@ namespace School.Migrations
                     b.Navigation("LoginHistories");
 
                     b.Navigation("ResetHistoriesTokens");
-                });
 
-            modelBuilder.Entity("School.Models.Role", b =>
-                {
+                    b.Navigation("UserActivityHistory");
+
+                    b.Navigation("UserActivityLog");
+
                     b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618

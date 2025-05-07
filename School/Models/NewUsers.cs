@@ -1,55 +1,77 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
+using System.Collections.Generic;
 
 namespace School.Models
 {
     public class NewUsers
     {
-        public int Id { get; set; }  // Kullanıcının benzersiz ID'si
+        // Kullanıcının benzersiz ID'si
+        [Key]
+        public int Id { get; set; }
 
-        [Required(ErrorMessage = "E-Posta gereklidir."), EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi girin.")]
-        public string Email { get; set; }  // Kullanıcının e-posta adresi
+        // E-posta adresi, gerekli ve doğrulama için EmailAddress kullanıldı
+        [Required(ErrorMessage = "E-Posta gereklidir.")]
+        [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi girin.")]
+        [StringLength(100, ErrorMessage = "E-posta adresi 100 karakteri geçemez.")]
+        public string Email { get; set; }
 
+        // Kullanıcının adı, gerekli ve uzunluk kontrolü yapıldı
         [Required(ErrorMessage = "Ad gereklidir.")]
-        public string Name { get; set; }  // Kullanıcının e-posta adresi
+        [StringLength(50, ErrorMessage = "Ad 50 karakteri geçemez.")]
+        public string Name { get; set; }
 
+        // Kullanıcının soyadı, gerekli ve uzunluk kontrolü yapıldı
         [Required(ErrorMessage = "Soyad gereklidir.")]
-        public string Surname { get; set; }  // Kullanıcının e-posta adresi
+        [StringLength(50, ErrorMessage = "Soyad 50 karakteri geçemez.")]
+        public string Surname { get; set; }
 
-        public string? PasswordHash { get; set; } //Bu, kullanıcının şifresinin hash'lenmiş halini tutar
+        // Şifre hash'lenmiş olarak tutulur
+        public string? PasswordHash { get; set; }
 
-        public string? PasswordSalt { get; set; } //Bu, aynı şifrelerin bile farklı hash'lerle şifrelenmesini sağlar
+        // Şifre için kullanılan salt
+        public string? PasswordSalt { get; set; }
 
-        public DateTime CreateDate { get; set; } = DateTime.Now;  // Kullanıcının kayıt olma tarihi
+        // Kullanıcının kayıt olma tarihi, varsayılan olarak şu anki tarih
+        [Required(ErrorMessage = "Oluşturulma tarihi gereklidir.")]
+        public DateTime CreateDate { get; set; } = DateTime.Now;
 
-        public bool IsActive { get; set; } = true; // Varsayılan olarak aktif
+        // Kullanıcının aktif olup olmadığını belirten bayrak
+        public bool IsActive { get; set; } = true;
 
-        public bool IsDeleted { get; set; } = false; // Varsayılan olarak silinmemiş
+        // Kullanıcının silinip silinmediğini gösterir (soft delete)
+        public bool IsDeleted { get; set; } = false;
 
+        // Hatalı giriş sayısı
+        [Range(0, int.MaxValue, ErrorMessage = "Hatalı giriş sayısı geçerli olmalıdır.")]
         public int? LoginErrorNumber { get; set; } = 0;
 
-        [Phone(ErrorMessage = "Geçerli bir numara girin.")]
+        // Kullanıcının telefon numarası
+        [Phone(ErrorMessage = "Geçerli bir telefon numarası girin.")]
+        [StringLength(15, ErrorMessage = "Telefon numarası en fazla 15 karakter olabilir.")]
         public string PhoneNumber { get; set; }
 
-        public bool IsEmailConfirmed { get; set; } = false;  // Kullanıcının e-posta doğrulandı mı?
+        // E-posta doğrulama durumu
+        public bool IsEmailConfirmed { get; set; } = false;
 
-        //[NotMapped] özelliği, bu alanın veritabanında bir sütun olarak tutulmayacağını belirtir.
-        //Yani bu alan sadece uygulama tarafında kullanılır. Bu örnekte, kullanıcının şifresini tutar ve genellikle şifreyi doğrulamak amacıyla kullanılır.
+        // Parola, NotMapped olduğu için yalnızca uygulama tarafında kullanılır
         [NotMapped]
         [Required(ErrorMessage = "Parola gereklidir.")]
         [MinLength(8, ErrorMessage = "Parola en az 8 karakter uzunluğunda olmalıdır.")]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$", ErrorMessage = "Parola en az bir büyük harf, bir rakam ve bir özel karakter içermelidir.")]
         public string Password { get; set; }
 
+        // Parola onayı, NotMapped olduğu için yalnızca uygulama tarafında kullanılır
         [NotMapped]
         [Required(ErrorMessage = "Parolayı onaylamak gereklidir.")]
         [Compare("Password", ErrorMessage = "Parolalar eşleşmiyor.")]
         public string ConfirmPassword { get; set; }
 
+        // Kullanım şartlarını kabul etme durumu, NotMapped olduğu için yalnızca uygulama tarafında kullanılır
         [NotMapped]
         [Required(ErrorMessage = "Kullanım şartlarını kabul etmeniz gerekmektedir.")]
         public bool AgreeTerms { get; set; }
-
 
         // Kullanıcının giriş-çıkış geçmişi
         public List<NewLoginHistory> LoginHistories { get; set; } = new List<NewLoginHistory>();
@@ -57,7 +79,16 @@ namespace School.Models
         // Kullanıcının yaptığı şifre sıfırlama istekleri
         public List<NewPasswordHistory> ResetHistoriesTokens { get; set; } = new List<NewPasswordHistory>();
 
-        // Kullanıcının yaptığı şifre sıfırlama istekleri
+        // Kullanıcının yaptığı e-posta işlemleri geçmişi
         public List<NewEmailHistory> EmailHistoriesTokens { get; set; } = new List<NewEmailHistory>();
+
+        // Kullanıcının rol bilgilerini tutar (RoleId üzerinden bağlantı)
+        public List<NewUserRoles> UserRoles { get; set; } = new List<NewUserRoles>();
+
+        // Kullanıcının block unblock bilgilerini tutar
+        public List<NewUserActivityLog> UserActivityLog { get; set; } = new List<NewUserActivityLog>();
+
+        // Kullanıcının block unblock bilgilerini tutar
+        public List<NewUserIsActiveHistory> UserActivityHistory { get; set; } = new List<NewUserIsActiveHistory>();
     }
 }
