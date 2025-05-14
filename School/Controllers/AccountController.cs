@@ -192,9 +192,15 @@ namespace School.Controllers
                 return View();
             }
 
-			Console.WriteLine(user.UserID + " " + user.Token + " Bitiş Süresi " + user.ExpiryDate + " Şuanki Zaman " + DateTime.Now);
-            // Token ve user bilgilerini view'e gönder
+            var model = new NewUsers
+            {
+                Id = user.UserID,
+                ResetHistoriesTokens = new List<NewPasswordHistory> { user }
+            };
 
+            Console.WriteLine(user.UserID + " " + user.Token + " Bitiş Süresi " + user.ExpiryDate + " Şuanki Zaman " + DateTime.Now);
+            // Token ve user bilgilerini view'e gönder
+            ViewBag.Token = token;
             return View();
         }
 
@@ -224,14 +230,14 @@ namespace School.Controllers
             var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
-                _logger.LogInformation("ÖMER: {Email}", email);
+                _logger.LogInformation("Kullanıcı bulunamadı: {Email}", email);
                 return NotFound("Kullanıcı bulunamadı.");
             }
 
             user.IsActive = true;
             user.LoginErrorNumber = 0;
             await _context.SaveChangesAsync();
-                _logger.LogInformation("FARUK: {Email}", email);
+                _logger.LogInformation("Kullanıcı Hesabı Aktifleştirildi: {Email}", email);
 
             return RedirectToAction("Login", "Account", new { activated = true });
         }

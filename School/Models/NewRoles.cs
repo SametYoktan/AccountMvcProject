@@ -17,6 +17,7 @@ namespace School.Models
         public DateTime CreateDate { get; set; } = DateTime.Now;
 
         // İlişki: Bu role ait kullanıcı-rol ilişkileri
-        public ICollection<NewUserRoles> UserRoles { get; set; } = new List<NewUserRoles>();
+        public List<NewUserRoles> UserRoles { get; set; } = new List<NewUserRoles>();
+
     }
 }

@@ -389,8 +389,14 @@ namespace School.Services
 				return false;
 			}
 
-			// Şifre kontrolleri
-			if (string.IsNullOrEmpty(newPassword))
+            if (PasswordToken.UserID != user2.Id)
+            {
+                errorMessage = "Token kullanıcıyla eşleşmiyor.";
+                return false;
+            }
+
+            // Şifre kontrolleri
+            if (string.IsNullOrEmpty(newPassword))
 			{
 				errorMessage = "Parola gereklidir.";
 				return false;
