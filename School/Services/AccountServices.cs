@@ -214,6 +214,13 @@ namespace School.Services
                 if (user.LoginErrorNumber >= 5 && user.IsActive)
                 {
                     user.IsActive = false;
+
+                    var create_IsActive_history = new NewUserIsActiveHistory
+                    {
+                        UserID = user.Id,
+                        IsUsed =false,
+                    };
+                    _context._NewUserIsActiveHistory.Add(create_IsActive_history);
                     _context.SaveChanges();
                     _logger.LogWarning("Hesap kilitlendi: {UsernameOrEmail}", usernameOrEmail);  // Yanlış şifre loglaması
                     AccountUnlockMail(user, usernameOrEmail);
@@ -264,7 +271,7 @@ namespace School.Services
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = rememberMe,
-                ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(10)//Sayfada İşlem Yapılmadığında Bu Süre Sonunda Kullanıcıyı At
+                ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(1)//Sayfada İşlem Yapılmadığında Bu Süre Sonunda Kullanıcıyı At
             };
 
             var httpContext = _httpContextAccessor.HttpContext;

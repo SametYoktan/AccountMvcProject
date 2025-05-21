@@ -236,8 +236,17 @@ namespace School.Controllers
 
             user.IsActive = true;
             user.LoginErrorNumber = 0;
+
+            var create_IsActive_history = new NewUserIsActiveHistory
+            {
+                UserID = user.Id,
+                IsUsed = true,
+            };
+            _context._NewUserIsActiveHistory.Add(create_IsActive_history);
+
             await _context.SaveChangesAsync();
-                _logger.LogInformation("Kullanıcı Hesabı Aktifleştirildi: {Email}", email);
+
+            _logger.LogInformation("Kullanıcı Hesabı Aktifleştirildi: {Email}", email);
 
             return RedirectToAction("Login", "Account", new { activated = true });
         }

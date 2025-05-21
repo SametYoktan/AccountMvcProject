@@ -80,6 +80,7 @@ app.Use(async (context, next) =>
     //Console.WriteLine($">>>>>KULLANICI ADI {user.Identity.Name}");
     //Console.WriteLine($">>>>>HANGÝ SAYFADAYIM {context.Request.Path}");
     //Console.WriteLine($">>>>>ÇEREZDEKÝ VERÝ {myCookieValue}");
+
     await next();
 });
 
