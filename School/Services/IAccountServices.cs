@@ -24,5 +24,6 @@ namespace School.Services
 
 		NewPasswordHistory? GetUserByResetToken(string token);
         bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage);
+        Task<bool> ActivateAndRedirect(string email);
     }
 }

@@ -226,29 +226,17 @@ namespace School.Controllers
         #region Arka Planda Çalışan Hesap Aktifleştirme Methodu
         [HttpGet]
         public async Task<IActionResult> ActivateAndRedirect(string email)//Bu Method Bir Sayfaya Bağlı Çalışmaz.Arka Planda Tetiklendiğinde Çalışır
-        {
-            var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null)
+        {          
+            var isActivated = await _accountService.ActivateAndRedirect(email);
+
+            if (!isActivated)
             {
                 _logger.LogInformation("Kullanıcı bulunamadı: {Email}", email);
                 return NotFound("Kullanıcı bulunamadı.");
             }
 
-            user.IsActive = true;
-            user.LoginErrorNumber = 0;
-
-            var create_IsActive_history = new NewUserIsActiveHistory
-            {
-                UserID = user.Id,
-                IsUsed = true,
-            };
-            _context._NewUserIsActiveHistory.Add(create_IsActive_history);
-
-            await _context.SaveChangesAsync();
-
             _logger.LogInformation("Kullanıcı Hesabı Aktifleştirildi: {Email}", email);
-
-            return RedirectToAction("Login", "Account", new { activated = true });
+            return RedirectToAction("Login", "Account", new { activated = true });      
         }
         #endregion
 

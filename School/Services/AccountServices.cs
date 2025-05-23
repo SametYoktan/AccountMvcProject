@@ -271,7 +271,7 @@ namespace School.Services
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = rememberMe,
-                ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(30) : DateTime.UtcNow.AddMinutes(1)//Sayfada İşlem Yapılmadığında Bu Süre Sonunda Kullanıcıyı At
+                ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(((int)SessionTimeoutDurationEnum.Long)) : DateTime.UtcNow.AddMinutes(((int)SessionTimeoutDurationEnum.Short))//Sayfada İşlem Yapılmadığında Bu Süre Sonunda Kullanıcıyı At
             };
 
             var httpContext = _httpContextAccessor.HttpContext;
@@ -303,7 +303,7 @@ namespace School.Services
 				_logger.LogWarning("Geçersiz e-posta formatı: {Email}", email);
 				return false;
 			}
-
+            
 			var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
 			Console.WriteLine($"DEBUG: Gelen e-posta adresi: {email}");
 
@@ -343,7 +343,7 @@ namespace School.Services
                     UserID = user.Id,
                     UserEmail = email,
                     Description = email + " Hesabının " + EmailDescriptionEnum.Şifre_Sıfırlama_Maili_Gönderildi.ToString(),
-                    MailType = EmailTypeEnum.PassWord.ToString()
+                    MailType = EmailTypeEnum.PassWord.ToString() 
                 };
                 _context._NewEmailHistory.Add(create_email_history);
                 _context.SaveChanges();
@@ -442,7 +442,7 @@ namespace School.Services
 			user2.PasswordSalt = salt;
 
 			// Token’ı devre dışı bırak
-			PasswordToken.ExpiryDate = DateTime.UtcNow.AddMinutes(-1);
+			PasswordToken.ExpiryDate = DateTime.Now.AddMinutes(-1);
             PasswordToken.IsUsed = true;
 
 			_context.SaveChanges();
@@ -450,5 +450,31 @@ namespace School.Services
 			_logger.LogInformation("Şifre başarıyla sıfırlandı: {Email}", user2.Email);
 			return true;
 		}
-	}
+
+        public async Task<bool> ActivateAndRedirect(string email)
+        {
+            var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                _logger.LogInformation("Kullanıcı bulunamadı: {Email}", email);
+                return false;
+            }          
+
+            user.IsActive = true;
+            user.LoginErrorNumber = 0;
+
+            var create_IsActive_history = new NewUserIsActiveHistory
+            {
+                UserID = user.Id,
+                IsUsed = true,
+            };
+            _context._NewUserIsActiveHistory.Add(create_IsActive_history);
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Kullanıcı Hesabı Aktifleştirildi: {Email}", email);
+
+            return true;
+        }
+    }
 }
