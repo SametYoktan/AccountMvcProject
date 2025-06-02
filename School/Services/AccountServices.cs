@@ -259,12 +259,13 @@ namespace School.Services
             }
         }
 
-        public async Task SetUserCookieAsync(string email,string name,string surname, bool rememberMe)
+        public async Task SetUserCookieAsync(string email,string name,string surname, bool rememberMe,string role)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, name+" "+surname),
-                new Claim(ClaimTypes.Email, email)
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role,role)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -274,7 +275,7 @@ namespace School.Services
                 ExpiresUtc = rememberMe ? DateTime.UtcNow.AddDays(((int)SessionTimeoutDurationEnum.Long)) : DateTime.UtcNow.AddMinutes(((int)SessionTimeoutDurationEnum.Short))//Sayfada İşlem Yapılmadığında Bu Süre Sonunda Kullanıcıyı At
             };
 
-            var httpContext = _httpContextAccessor.HttpContext;
+			var httpContext = _httpContextAccessor.HttpContext;
             if (httpContext != null)
             {
                 await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);

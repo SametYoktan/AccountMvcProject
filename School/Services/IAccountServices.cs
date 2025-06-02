@@ -18,7 +18,7 @@ namespace School.Services
 
 		NewUsers? UserLoginControl(string userInfo);
 		NewUsers? UserLogin(string usernameOrEmail, string password);
-        Task SetUserCookieAsync(string email,string name,string surname, bool rememberMe);
+        Task SetUserCookieAsync(string email,string name,string surname, bool rememberMe,string role);
 
         Task<bool> ForgotPassword(string email);
 
