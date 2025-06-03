@@ -7,7 +7,7 @@
     }
     public enum SessionTimeoutDurationEnum
     {
-        Long = 30,
+        Long = 5,
         Short = 1,
     }
 }

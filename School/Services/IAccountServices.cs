@@ -7,7 +7,7 @@ namespace School.Services
         #region YARDIMCI METOTLAR
         bool UserIsnameControl(string username);//Kullanıcı Adı Db de Varmı Yokmu Kontrol Eder
         bool UserIsEmailControl(string email);//E-Mail Db de Varmı Yokmu Kontrol Eder
-        NewUsers? UserIsnameAndEmailControl(string username, string email);//Burası Kullanıcı Adı Ve Mail'i Direk Çerezdeki Veriden Çekiyor Textboxtan Değil O yüzden model.Username Yazmadık
+        NewUsers? UserEmailControl(string email);//Burası Kullanıcı Adı Ve Mail'i Direk Çerezdeki Veriden Çekiyor Textboxtan Değil O yüzden model.Username Yazmadık
         string HashPassword(string password, string salt);
         string GenerateSalt();
         void UserLoginTime(NewUsers user);

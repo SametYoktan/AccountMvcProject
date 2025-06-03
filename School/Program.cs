@@ -4,6 +4,7 @@ using School.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Serilog;
+using School.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,17 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         // options.ExpireTimeSpan = TimeSpan.FromMinutes(1); // Burada süreyi belirlemek
     });
 
+builder.Services.AddControllersWithViews();
+
+
+builder.Services.AddDistributedMemoryCache(); // Required for session
+builder.Services.AddSession(options =>
+{
+	options.IdleTimeout = TimeSpan.FromMinutes(30);
+	options.Cookie.HttpOnly = true;
+	options.Cookie.IsEssential = true;
+});
+
 // Authorization ekleniyor
 builder.Services.AddAuthorization();
 
@@ -62,10 +74,15 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseSession(); // bu zaten varsa tekrar eklemeyin
 
 // Kimlik doðrulama ve yetkilendirme middleware'ini kullanýyoruz
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<SessionCheckMiddleware>();
+
+
+
 
 // Loglama middleware'ini ekliyoruz
 app.Use(async (context, next) =>
@@ -76,12 +93,13 @@ app.Use(async (context, next) =>
     Log.Information("Kullanýcý Adý: {UserName}", user.Identity.Name);
     Log.Information("Hangi Sayfada: {RequestPath}", context.Request.Path);
     Log.Information("Çerezdeki Veri: {CookieValue}", myCookieValue); // Çerezdeki veriyi yazdýr
-    //Console.WriteLine($">>>>>KULLANICI AKTÝFMÝ {user.Identity.IsAuthenticated}");
-    //Console.WriteLine($">>>>>KULLANICI ADI {user.Identity.Name}");
-    //Console.WriteLine($">>>>>HANGÝ SAYFADAYIM {context.Request.Path}");
-    //Console.WriteLine($">>>>>ÇEREZDEKÝ VERÝ {myCookieValue}");
-
-    await next();
+	Console.WriteLine("-------------------------------------------------------");
+	Console.WriteLine($">>>>>KULLANICI AKTÝFMÝ {user.Identity.IsAuthenticated}");
+    Console.WriteLine($">>>>>KULLANICI ADI {user.Identity.Name}");
+    Console.WriteLine($">>>>>HANGÝ SAYFADAYIM {context.Request.Path}");
+    Console.WriteLine($">>>>>ÇEREZDEKÝ VERÝ {myCookieValue}");
+	Console.WriteLine("-------------------------------------------------------");
+	await next();
 });
 
 // MVC rota ayarlarý

@@ -85,12 +85,13 @@ namespace School.Controllers
 		// Kullanıcı giriş sayfasını yükler
 		[HttpGet]//Veriyi almak için kullanılır. Tarayıcıdan URL'ye girildiğinde veya bir sayfa yüklendiğinde çağrılır.
 		public IActionResult Login()
-		{
+		{		
 			// Eğer kullanıcı zaten giriş yaptıysa, cookie'den bilgileri alalım
 			var userInfo = Request.Cookies["UserInfo"]; //buraya iki if koymamın sebebi şu, çerez dolu olabilir ama kullanıcı bilgileri bir ihtimal değişirse hata mesajını düzgün görmek için		
 
 			if (userInfo != null && _accountService.UserLoginControl(userInfo) is { } user) //Çerez Boş Değilse Ve UserLoginControl null dönmüyorsa yani çerezdeki veri doğruysa ekstra güvenlik kontrolü
 			{
+				Console.WriteLine("test");
 				var userWithRoles = _context._NewUsers
 			.Include(u => u.UserRoles)           // UserRoles ilişkisini yükle
 			.ThenInclude(ur => ur.Role)          // UserRoles içindeki Role ilişkisini yükle
@@ -100,7 +101,7 @@ namespace School.Controllers
 			.Select(ur => ur.Role.Name)
 			 .First();
 				Console.WriteLine("aaa" + roleName);
-				SetUserCookie(user.Email, user.Name, user.Surname, false, roleName);
+				SetUserCookie(user.Email, user.Name, user.Surname, true, roleName);
 				return RedirectToAction("Index", "Home");
 			}
 
@@ -132,6 +133,14 @@ namespace School.Controllers
 
 			var user = _accountService.UserLogin(model.Email, model.Password);
 
+
+
+			if (user == null || !user.IsActive)
+			{
+				ModelState.AddModelError("Password", "Kullanıcı adı veya parola hatalı.");
+				return View(model); // Hatalarla geri dön
+			}
+
 			var roleID = _context._NewUserRoles.Where(ur => ur.UserID == user.Id).Select(ur => ur.RoleID).FirstOrDefault();
 
 			var userWithRoles = _context._NewUsers
@@ -143,20 +152,14 @@ namespace School.Controllers
 			.Select(ur => ur.Role.Name)
 			 .First();
 
-			Console.WriteLine(roleName, userWithRoles);
+			Console.WriteLine("Account Controller Login Post "+roleName, userWithRoles);
 
-
-			if (user == null || !user.IsActive)
-			{
-				ModelState.AddModelError("Password", "Kullanıcı adı veya parola hatalı.");
-				return View(model); // Hatalarla geri dön
-			}
 			// Çerezi manuel olarak ayarlıyoruz
 			await SetUserCookie(user.Email, user.Name, user.Surname, RememberMe, roleName);
 
 			///Adminmi Standart Kullanıcımı Onu Kontrol Ediyoruz
 			/// 1=Standart,2=Admin
-			Console.WriteLine(roleID);
+			Console.WriteLine("Account Controller Login Post "+roleID);			
 
 			if (roleID == 1)
 				return RedirectToAction("Index", "Home");
@@ -166,7 +169,7 @@ namespace School.Controllers
 
 		public async Task SetUserCookie(string email, string name, string surname, bool rememberMe, string role)
 		{
-			await _accountService.SetUserCookieAsync(email, name, surname, rememberMe, role);
+			await _accountService.SetUserCookieAsync(email, name, surname, rememberMe, role);			
 		}
 
 		public async Task<IActionResult> Logout()

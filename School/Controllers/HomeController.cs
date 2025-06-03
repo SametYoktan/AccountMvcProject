@@ -17,8 +17,8 @@ namespace School.Controllers
         }
 
         public IActionResult Index()
-        {
-            var list=_context.Student.ToList();
+        {			
+			var list=_context.Student.ToList();
             return View(list);
         }
 
@@ -32,7 +32,8 @@ namespace School.Controllers
 
         public async Task<IActionResult> Create(Student student)
         {
-            if (student.Id==0)
+			
+			if (student.Id==0)
             {
                 await _context.AddAsync(student);
             }
@@ -48,7 +49,8 @@ namespace School.Controllers
 		//[AllowAnonymous] buda dahil etmemek için
 		public IActionResult Student(int? Id)
         {
-            Student student;
+			
+			Student student;
             if (Id.HasValue)
             {
                 student = _context.Student.Find(Id);
