@@ -251,9 +251,22 @@ namespace School.Controllers
 
 		#region Arka Planda Çalışan Hesap Aktifleştirme Methodu
 		[HttpGet]
-		public async Task<IActionResult> ActivateAndRedirect(string email)//Bu Method Bir Sayfaya Bağlı Çalışmaz.Arka Planda Tetiklendiğinde Çalışır
+		public async Task<IActionResult> ActivateAndRedirect(string email,string token)//Bu Method Bir Sayfaya Bağlı Çalışmaz.Arka Planda Tetiklendiğinde Çalışır
 		{
+			ViewBag.Token = token;
+			var user = _accountService.GetUserIsActiveToken(token);
+
+			if (user == null)
+			{
+				ViewBag.ErrorMessage = "Token geçersiz veya süresi dolmuş.";
+				return View();
+			}
+
+			Console.WriteLine("Kullanıcının " + user.UserID);
+
 			var isActivated = await _accountService.ActivateAndRedirect(email);
+
+			Console.WriteLine("Kullanıcı " + user.UserID);
 
 			if (!isActivated)
 			{

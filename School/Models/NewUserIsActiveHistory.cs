@@ -14,9 +14,15 @@ namespace School.Models
         [ForeignKey("UserID")]
         public NewUsers User { get; set; }  // Navigation property
 
-        [Required(ErrorMessage = "Durum aktif mi? bilgisi gereklidir.")]
+		public string? Token { get; set; }
+
+		[Required(ErrorMessage = "Durum aktif mi? bilgisi gereklidir.")]
         public bool IsUsed { get; set; }
 
         public DateTime CreateDate { get; set; } = DateTime.Now;
-    }
+
+		public DateTime? ExpiryDate { get; set; }
+
+		public int? IsActiveId { get; set; } // Nullable
+	}
 }

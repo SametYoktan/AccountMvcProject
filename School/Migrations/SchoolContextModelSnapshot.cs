@@ -66,6 +66,9 @@ namespace School.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("LoginId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("LoginTime")
                         .HasColumnType("datetime2");
 
@@ -145,7 +148,7 @@ namespace School.Migrations
                     b.ToTable("_NewRoles");
                 });
 
-            modelBuilder.Entity("School.Models.NewUserActivityLog", b =>
+            modelBuilder.Entity("School.Models.NewUserActionLog", b =>
                 {
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
@@ -187,8 +190,17 @@ namespace School.Migrations
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("IsActiveId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsUsed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserID")
                         .HasColumnType("int");
@@ -337,7 +349,7 @@ namespace School.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("School.Models.NewUserActivityLog", b =>
+            modelBuilder.Entity("School.Models.NewUserActionLog", b =>
                 {
                     b.HasOne("School.Models.NewUsers", "User")
                         .WithMany("UserActivityLog")

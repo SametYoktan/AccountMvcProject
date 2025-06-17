@@ -21,5 +21,7 @@ namespace School.Models
         [Required(ErrorMessage = "Giriş tipi boş bırakılamaz.")]
         [StringLength(50, ErrorMessage = "Giriş tipi en fazla 50 karakter olabilir.")]
         public string Type { get; set; }
-    }
+
+        public int? LoginId { get; set; } // Nullable
+	}
 }

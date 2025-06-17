@@ -93,13 +93,13 @@ app.Use(async (context, next) =>
     Log.Information("Kullanýcý Adý: {UserName}", user.Identity.Name);
     Log.Information("Hangi Sayfada: {RequestPath}", context.Request.Path);
     Log.Information("Çerezdeki Veri: {CookieValue}", myCookieValue); // Çerezdeki veriyi yazdýr
-	Console.WriteLine("-------------------------------------------------------");
-	Console.WriteLine($">>>>>KULLANICI AKTÝFMÝ {user.Identity.IsAuthenticated}");
+    Console.WriteLine("-------------------------------------------------------");
+    Console.WriteLine($">>>>>KULLANICI AKTÝFMÝ {user.Identity.IsAuthenticated}");
     Console.WriteLine($">>>>>KULLANICI ADI {user.Identity.Name}");
     Console.WriteLine($">>>>>HANGÝ SAYFADAYIM {context.Request.Path}");
     Console.WriteLine($">>>>>ÇEREZDEKÝ VERÝ {myCookieValue}");
-	Console.WriteLine("-------------------------------------------------------");
-	await next();
+    Console.WriteLine("-------------------------------------------------------");
+    await next();
 });
 
 // MVC rota ayarlarý

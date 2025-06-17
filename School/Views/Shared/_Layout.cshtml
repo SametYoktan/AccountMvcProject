@@ -38,24 +38,34 @@
 						</li>
 					</ul>
 				</div>
-					@if (User.Identity.IsAuthenticated)
-					{
-						<!-- Eğer kullanıcı giriş yapmışsa, Logout butonu aktif olacak -->
+				@if (User.Identity.IsAuthenticated)
+				{
+					<!-- Eğer kullanıcı giriş yapmışsa, Logout butonu aktif olacak -->
+
 					<div class="custom-dropdown">
-							<form asp-action="Logout" asp-controller="Account" method="post">
-								@Html.AntiForgeryToken()  <!-- CSRF koruması -->
-								<div class="dropdown">
+						<form asp-action="Logout" asp-controller="Account" method="post">
+							@Html.AntiForgeryToken()  <!-- CSRF koruması -->
+							<div class="dropdown">
+								@if (User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value == "Admin")//Şuan Bu İf'e gerek Yok Ama İleride Olacak Admin Panel Yaparken
+								{
 									<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-									@User.Identity.Name
+										@User.Identity.Name @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
 									</button>
-									<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+								}
+								else
+								{
+									<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+										@User.Identity.Name @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+									</button>
+								}
+								<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 									<li><a class="dropdown-item" href="@Url.Action("Index", "Home")">AnaSayfa</a></li>
 									<li><a class="dropdown-item" href="@Url.Action("Student", "Home")">Create Page</a></li>
-										<li><hr class="dropdown-divider"></li>
-										<li><a class="dropdown-item" href="@Url.Action("Logout", "Account")">Logout</a></li>
-									</ul>
-								</div>
-							</form>
+									<li><hr class="dropdown-divider"></li>
+									<li><a class="dropdown-item" href="@Url.Action("Logout", "Account")">Logout</a></li>
+								</ul>
+							</div>
+						</form>
 					</div>
 				}
 				else

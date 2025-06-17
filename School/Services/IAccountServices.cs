@@ -23,7 +23,10 @@ namespace School.Services
         Task<bool> ForgotPassword(string email);
 
 		NewPasswordHistory? GetUserByResetToken(string token);
-        bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage);
+
+		NewUserIsActiveHistory? GetUserIsActiveToken(string token);
+
+		bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage);
         Task<bool> ActivateAndRedirect(string email);
     }
 }

@@ -103,7 +103,8 @@ namespace School.Services
 						UserID = user.Id,
 						LoginTime = lastLogin.LoginTime,
 						LogoutTime = DateTime.Now,
-						Type = LoginEnum.Cikis.ToString()
+						Type = LoginEnum.Cikis.ToString(),
+						LoginId = lastLogin.Id
 					};
 					await _context._NewLoginHistory.AddAsync(create_logout_history);
 					await _context.SaveChangesAsync();
@@ -121,10 +122,10 @@ namespace School.Services
 			}
 		}
 
-		void AccountUnlockMail(NewUsers user, string usernameOrEmail) //interface olarak tanımlamadık çünkü sadece burada kullanacağız
+		void AccountUnlockMail(NewUsers user, string usernameOrEmail,string token) //interface olarak tanımlamadık çünkü sadece burada kullanacağız
 		{
 			_logger.LogWarning("Kilitli Hesabı Açma Talebi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
-			var activationLink = $"https://localhost:7070/Account/ActivateAndRedirect?email={user.Email}";
+			var activationLink = $"https://localhost:7070/Account/ActivateAndRedirect?email={user.Email}&token={token}";
 			var emailBody = $"Hesabınızı aktifleştirmek için aşağıdaki bağlantıya tıklayın:<br><br> <a href='{activationLink}'>Hesabı Aktifleştir</a>";
 			//var emailBody = $"Hesabınız Şüpheli Giriş Nedeniyle Kilitlendi Kilidi Açmak için bağlantıya tıklayın:<br><br> <a href=''>Hesabınız Kilitlendi</a>";
 			_emailService.SendEmailAsync(user.Email, "Hesabınız Kilitlendi", emailBody);
@@ -212,15 +213,19 @@ namespace School.Services
 				{
 					user.IsActive = false;
 
+					string isactiveToken = Guid.NewGuid().ToString();
+
 					var create_IsActive_history = new NewUserIsActiveHistory
 					{
 						UserID = user.Id,
 						IsUsed = false,
+						Token = isactiveToken,
+						ExpiryDate = DateTime.Now.AddMinutes(60),
 					};
 					_context._NewUserIsActiveHistory.Add(create_IsActive_history);
 					_context.SaveChanges();
 					_logger.LogWarning("Hesap kilitlendi: {UsernameOrEmail}", userEmail);  // Yanlış şifre loglaması
-					AccountUnlockMail(user, userEmail);
+					AccountUnlockMail(user, userEmail, isactiveToken);
 				}
 				return null; // Hatalı şifre, null döndürülür
 			}
@@ -228,7 +233,19 @@ namespace School.Services
 			if (!user.IsActive)
 			{
 				_logger.LogWarning("Kilitli hesaba giriş denemesi: {UsernameOrEmail}", userEmail);  // Hatalı giriş denemesi
-				AccountUnlockMail(user, userEmail);
+
+				string isactiveToken = Guid.NewGuid().ToString();
+
+				var create_IsActive_history = new NewUserIsActiveHistory
+				{
+					UserID = user.Id,
+					IsUsed = false,
+					Token = isactiveToken,
+					ExpiryDate = DateTime.Now.AddMinutes(60),
+				};
+				_context._NewUserIsActiveHistory.Add(create_IsActive_history);
+				_context.SaveChanges();
+				AccountUnlockMail(user, userEmail, isactiveToken);
 				return user;
 				//KİTLİ HESABA GİRİŞ YAPILMAYA ÇALIŞILIRSA OTOMATİK HESABI AKTİF ETMEK İÇİN MAİL GÖNDERİLSİN
 			}
@@ -367,6 +384,18 @@ namespace School.Services
 			return _context._NewPasswordHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.Now);
 		}
 
+		public NewUserIsActiveHistory? GetUserIsActiveToken(string token)
+		{
+			if (string.IsNullOrEmpty(token))
+			{
+				Console.WriteLine("token geçesiz");
+				return null;
+			}
+
+
+			return _context._NewUserIsActiveHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.Now);
+		}
+
 		public bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage)
 		{
 			errorMessage = string.Empty;
@@ -461,10 +490,18 @@ namespace School.Services
 			user.IsActive = true;
 			user.LoginErrorNumber = 0;
 
+			var lastisactive = await _context._NewUserIsActiveHistory
+				 .Where(l => l.UserID == user.Id && l.ExpiryDate != null)
+				 .OrderByDescending(l => l.CreateDate)
+				 .FirstOrDefaultAsync();
+
+			lastisactive.ExpiryDate= DateTime.Now.AddMinutes(-1);
+
 			var create_IsActive_history = new NewUserIsActiveHistory
 			{
 				UserID = user.Id,
-				IsUsed = true,
+				IsUsed = true,			
+				IsActiveId=lastisactive.ID,			
 			};
 			_context._NewUserIsActiveHistory.Add(create_IsActive_history);
 
@@ -475,4 +512,4 @@ namespace School.Services
 			return true;
 		}
 	}
-}
+} 
