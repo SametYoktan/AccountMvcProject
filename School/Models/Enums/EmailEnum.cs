@@ -11,4 +11,10 @@
         Account = 1,
         PassWord = 2
     }
+
+    public enum IsActiveDescription
+    {
+        Hesap_Kilitlendi=1,
+        Hesap_Aktifleştirildi=2
+    }
 }

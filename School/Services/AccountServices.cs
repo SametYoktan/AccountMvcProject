@@ -220,6 +220,7 @@ namespace School.Services
 						UserID = user.Id,
 						IsUsed = false,
 						Token = isactiveToken,
+						Description = IsActiveDescription.Hesap_Kilitlendi.ToString(),
 						ExpiryDate = DateTime.Now.AddMinutes(60),
 					};
 					_context._NewUserIsActiveHistory.Add(create_IsActive_history);
@@ -241,6 +242,7 @@ namespace School.Services
 					UserID = user.Id,
 					IsUsed = false,
 					Token = isactiveToken,
+					Description = IsActiveDescription.Hesap_Kilitlendi.ToString(),
 					ExpiryDate = DateTime.Now.AddMinutes(60),
 				};
 				_context._NewUserIsActiveHistory.Add(create_IsActive_history);
@@ -495,12 +497,13 @@ namespace School.Services
 				 .OrderByDescending(l => l.CreateDate)
 				 .FirstOrDefaultAsync();
 
-			lastisactive.ExpiryDate= DateTime.Now.AddMinutes(-1);
+			lastisactive.IsUsed = true;
 
 			var create_IsActive_history = new NewUserIsActiveHistory
 			{
 				UserID = user.Id,
-				IsUsed = true,			
+				IsUsed = true,
+				Description= IsActiveDescription.Hesap_Aktifleştirildi.ToString(),
 				IsActiveId=lastisactive.ID,			
 			};
 			_context._NewUserIsActiveHistory.Add(create_IsActive_history);

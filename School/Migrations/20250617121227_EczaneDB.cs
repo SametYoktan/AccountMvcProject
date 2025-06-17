@@ -166,7 +166,8 @@ namespace School.Migrations
                     IsUsed = table.Column<bool>(type: "bit", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActiveId = table.Column<int>(type: "int", nullable: true)
+                    IsActiveId = table.Column<int>(type: "int", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
                 },
                 constraints: table =>
                 {

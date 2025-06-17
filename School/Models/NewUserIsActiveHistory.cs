@@ -24,5 +24,8 @@ namespace School.Models
 		public DateTime? ExpiryDate { get; set; }
 
 		public int? IsActiveId { get; set; } // Nullable
+
+		[StringLength(250, ErrorMessage = "Açıklama 250 karakteri geçemez.")]
+		public string Description { get; set; }
 	}
 }

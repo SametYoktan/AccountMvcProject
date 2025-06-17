@@ -12,7 +12,7 @@ using School.Models;
 namespace School.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20250617115253_EczaneDB")]
+    [Migration("20250617121227_EczaneDB")]
     partial class EczaneDB
     {
         /// <inheritdoc />
@@ -192,6 +192,11 @@ namespace School.Migrations
 
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
