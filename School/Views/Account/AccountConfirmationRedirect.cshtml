@@ -1,0 +1,118 @@
+﻿@{
+	ViewData["Title"] = "Hesabınız Kilitlendi";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>@ViewData["Title"]</title>
+	<style>
+		/* CSS Yukarıda gösterilen düzenlemeleri burada ekleyebilirsiniz */
+		body {
+			background-color: #f4f6f9; /* Sade arka plan */
+			/*color: #333;  Metin rengi */
+			justify-content: center;
+			align-items: center;
+			margin: 0; /* Margin sıfırlandı */
+			padding: 0; /* Padding sıfırlandı */
+		}
+
+		.container {
+			max-width: 450px;
+			width: 100%;
+			padding: 15px;
+			margin-top: 50px; /* Eğer navbar yukarı kayıyorsa, bu stil eklenebilir */
+		}
+
+		.card {
+			border: none;
+			border-radius: 8px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+		}
+
+		.card-body {
+			padding: 1.5rem;
+		}
+
+		.card-title {
+			font-size: 1.6rem; /* Daha küçük başlık boyutu */
+			text-align: center;
+			color: #0044cc; /* Kurumsal renk (mavi) */
+			margin-bottom: 1rem;
+		}
+
+		.form-control {
+			border-radius: 6px;
+			padding: 0.6rem;
+			font-size: 0.95rem;
+		}
+
+		.form-check-label {
+			font-size: 0.9rem;
+			color: #666;
+		}
+
+		.password-help {
+			display: none;
+			font-size: 0.85rem;
+			color: #dc3545; /* Kırmızı renk, hata mesajları için */
+		}
+
+		.form-text {
+			margin-top: 0.25rem;
+		}
+
+		/* Bağlantı ve ek bilgiler için stil */
+		.additional-links {
+			margin-top: 1rem;
+			font-size: 0.875rem;
+			text-align: center;
+		}
+
+			.additional-links a {
+				color: #0044cc;
+				text-decoration: none;
+			}
+
+				.additional-links a:hover {
+					text-decoration: underline;
+				}
+
+		/* Logo stil */
+		.logo {
+			display: block;
+			margin: 0 auto;
+			width: 60px; /* Logonun boyutunu ayarlayabilirsiniz */
+			height: auto;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="card">
+			<div class="card-body">
+				<!-- Logo ekleme -->
+				<img src="~/images/Logo.png" alt="Kurumsal Logo" class="logo" />
+				@if (ViewBag.ErrorMessage == "Token Var")
+				{
+					<div style="background-color: #fff3f3; color: #b10000; border: 1px solid #f5c2c2; border-radius: 6px; padding: 10px 15px; font-size: 0.9rem; text-align: center; margin-bottom: 20px;">
+						@ViewBag.ErrorMessage
+					</div>
+				}
+				else if (ViewBag.ErrorMessage == "Token Yok")
+				{
+					<div style="background-color: #007bff; color: white; border: 1px solid #0056b3; border-radius: 6px; padding: 10px 15px; font-size: 1rem; text-align: center; margin-bottom: 20px;">
+						Hesabınızı aktifleştirmek için size gönderilen maili kontrol ediniz"
+					</div>
+				}
+
+			</div>
+		</div>
+	</div>
+
+	<!-- Bootstrap JS ve Popper.js -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

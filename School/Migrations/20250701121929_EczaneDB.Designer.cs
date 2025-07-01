@@ -12,7 +12,7 @@ using School.Models;
 namespace School.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20250617121227_EczaneDB")]
+    [Migration("20250701121929_EczaneDB")]
     partial class EczaneDB
     {
         /// <inheritdoc />
@@ -24,6 +24,44 @@ namespace School.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("School.Models.NewAccountConfirmationHistory", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("IsActiveId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("_NewAccountConfirmationHistory");
+                });
 
             modelBuilder.Entity("School.Models.NewEmailHistory", b =>
                 {
@@ -204,7 +242,7 @@ namespace School.Migrations
                     b.Property<int?>("IsActiveId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsUsed")
+                    b.Property<bool?>("IsUsed")
                         .HasColumnType("bit");
 
                     b.Property<string>("Token")
@@ -324,6 +362,17 @@ namespace School.Migrations
                     b.ToTable("Student");
                 });
 
+            modelBuilder.Entity("School.Models.NewAccountConfirmationHistory", b =>
+                {
+                    b.HasOne("School.Models.NewUsers", "User")
+                        .WithMany("UserAccountHistory")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("School.Models.NewEmailHistory", b =>
                 {
                     b.HasOne("School.Models.NewUsers", "User")
@@ -410,6 +459,8 @@ namespace School.Migrations
                     b.Navigation("LoginHistories");
 
                     b.Navigation("ResetHistoriesTokens");
+
+                    b.Navigation("UserAccountHistory");
 
                     b.Navigation("UserActivityHistory");
 

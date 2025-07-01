@@ -90,5 +90,8 @@ namespace School.Models
 
         // Kullanıcının block unblock bilgilerini tutar
         public List<NewUserIsActiveHistory> UserActivityHistory { get; set; } = new List<NewUserIsActiveHistory>();
-    }
+
+		// Kullanıcının block unblock bilgilerini tutar
+		public List<NewAccountConfirmationHistory> UserAccountHistory { get; set; } = new List<NewAccountConfirmationHistory>();
+	}
 }

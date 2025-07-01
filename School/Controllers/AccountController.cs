@@ -55,7 +55,7 @@ namespace School.Controllers
 					return View(model);
 				}
 				_accountService.UserRegister(model);
-				return RedirectToAction("Login", "Account");
+				return RedirectToAction("AccountConfirmationRedirect", "Account");
 			}
 
 			// Hataları debug etmek için ModelState hatalarını yazdırma
@@ -102,7 +102,7 @@ namespace School.Controllers
 			 .First();
 				Console.WriteLine("aaa" + roleName);
 				SetUserCookie(user.Email, user.Name, user.Surname, true, roleName);
-				return RedirectToAction("Index", "Home");
+				return RedirectToAction("Index", "Home"); 
 			}
 
 			if (userInfo != null)//Eğer Çerez Doluysa Ve UserLoginControl False Döndüyse Yani Çerezdeki Bİlgiler Hatalı İse Çerezleri Silip Logine Yönlendir
@@ -131,11 +131,9 @@ namespace School.Controllers
 			if (!ModelState.IsValid)
 				return View(model); // Hatalarla geri döneriz
 
-			var user = _accountService.UserLogin(model.Email, model.Password);
+			var user = _accountService.UserLogin(model.Email, model.Password); //USER NULL DÖNER HATALARI GİRİŞLERDE ÇÜNKÜ SERVİCE KISMINDA RETURN NULL DEDİK HATALAI GİRİŞ İF'LERİNDE
 
-
-
-			if (user == null || !user.IsActive)
+			if (user == null)
 			{
 				ModelState.AddModelError("Password", "Kullanıcı adı veya parola hatalı.");
 				return View(model); // Hatalarla geri dön
@@ -249,7 +247,7 @@ namespace School.Controllers
 		}
 		#endregion
 
-		#region Arka Planda Çalışan Hesap Aktifleştirme Methodu
+		#region Arka Planda Çalışan User Aktifleştirme Methodu
 		[HttpGet]
 		public async Task<IActionResult> ActivateAndRedirect(string email,string token)//Bu Method Bir Sayfaya Bağlı Çalışmaz.Arka Planda Tetiklendiğinde Çalışır
 		{
@@ -276,6 +274,52 @@ namespace School.Controllers
 
 			_logger.LogInformation("Kullanıcı Hesabı Aktifleştirildi: {Email}", email);
 			return RedirectToAction("Login", "Account", new { activated = true });
+		}
+		#endregion
+
+		#region Arka Planda Çalışan Hesap Onaylama Methodu
+		[HttpGet]
+		public async Task<IActionResult> AccountConfirmationRedirect(string email, string token)//Bu Method Bir Sayfaya Bağlı Çalışmaz.Arka Planda Tetiklendiğinde Çalışır
+		{
+			ViewBag.Token = token; //Token Url Den Gelir Maildeki Linke Tıkladıgımızda Otomatik Dolar
+
+ 			if (token == null)//Kayıt Olduktan Sonra Herhangi Bir Token Oluşmayacağı İçin Burası Çalışacak CsHtml Koduna Bak
+			{
+				ViewBag.ErrorMessage = "Token Yok";
+				Console.WriteLine("Token Yok");
+				return View();
+			}
+
+			var user = _accountService.GetUserIsActiveToken(token);
+			if(user==null)
+			{
+				ViewBag.ErrorMessage = "Token Var";
+				Console.WriteLine("Token Var");
+			}
+			return View();
+
+			//var user = _accountService.GetUserIsActiveToken(token);
+
+			//if (user == null)
+			//{
+			//	ViewBag.ErrorMessage = "Token geçersiz veya süresi dolmuş.";
+			//	return View();
+			//}
+
+			//Console.WriteLine("Kullanıcının " + user.UserID);
+
+			//var isActivated = await _accountService.ActivateAndRedirect(email);
+
+			//Console.WriteLine("Kullanıcı " + user.UserID);
+
+			//if (!isActivated)
+			//{
+			//	_logger.LogInformation("Kullanıcı bulunamadı: {Email}", email);
+			//	return NotFound("Kullanıcı bulunamadı.");
+			//}
+
+			//_logger.LogInformation("Kullanıcı Hesabı Aktifleştirildi: {Email}", email);
+			//return RedirectToAction("Login", "Account", new { activated = true });
 		}
 		#endregion
 

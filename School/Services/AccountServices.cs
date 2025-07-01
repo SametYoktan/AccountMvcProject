@@ -142,6 +142,28 @@ namespace School.Services
 
 			_logger.LogWarning("Kilitli Hesaba Ait E-mail Adresine Unlock Maili Gönderildi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
 		}
+		// Bu İkisi Birleştirilcek Şimdilik Böyle Yazdım Parametreye Ve Enuma Bağla
+		//Linkin Gidiş Yolunu Düzelt Hesap Onaylandı CsHtml Oluştur
+		void AccountConfirmationMail(NewUsers user, string usernameOrEmail, string token) //interface olarak tanımlamadık çünkü sadece burada kullanacağız
+		{
+			_logger.LogWarning("Hesap Onaylama Talebi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
+			var activationLink = $"https://localhost:7070/Account/AccountConfirmationRedirect?email={user.Email}&token={token}";
+			var emailBody = $"Hesabınızı onaylamak için aşağıdaki bağlantıya tıklayın:<br><br> <a href='{activationLink}'>Hesabı Onayla</a>";
+			//var emailBody = $"Hesabınız Şüpheli Giriş Nedeniyle Kilitlendi Kilidi Açmak için bağlantıya tıklayın:<br><br> <a href=''>Hesabınız Kilitlendi</a>";
+			_emailService.SendEmailAsync(user.Email, "Hesabınızı Onaylamanız Gerekmektedir", emailBody);
+
+			var create_email_history = new NewEmailHistory
+			{
+				UserID = user.Id,
+				UserEmail = user.Email,
+				Description = user.Email + " Hesabının " + EmailDescriptionEnum.Hesap_Onaylama_Maili_Gönderildi.ToString(),
+				MailType = EmailTypeEnum.Account_Confirmation.ToString()
+			};
+			_context._NewEmailHistory.Add(create_email_history);
+			_context.SaveChanges();
+
+			_logger.LogWarning("Hesap Onaylama Talebi E-mail Adresine Unlock Maili Gönderildi: {UsernameOrEmail}", usernameOrEmail);  // Hatalı giriş denemesi
+		}
 		#endregion
 
 		public void UserRegister(NewUsers model)
@@ -220,7 +242,7 @@ namespace School.Services
 						UserID = user.Id,
 						IsUsed = false,
 						Token = isactiveToken,
-						Description = IsActiveDescription.Hesap_Kilitlendi.ToString(),
+						Description = IsUserActiveDescription.Hesap_Kilitlendi.ToString(),
 						ExpiryDate = DateTime.Now.AddMinutes(60),
 					};
 					_context._NewUserIsActiveHistory.Add(create_IsActive_history);
@@ -235,21 +257,41 @@ namespace School.Services
 			{
 				_logger.LogWarning("Kilitli hesaba giriş denemesi: {UsernameOrEmail}", userEmail);  // Hatalı giriş denemesi
 
-				string isactiveToken = Guid.NewGuid().ToString();
+				string isUseractiveToken = Guid.NewGuid().ToString();
 
 				var create_IsActive_history = new NewUserIsActiveHistory
 				{
 					UserID = user.Id,
 					IsUsed = false,
-					Token = isactiveToken,
-					Description = IsActiveDescription.Hesap_Kilitlendi.ToString(),
+					Token = isUseractiveToken,
+					Description = IsUserActiveDescription.Hesap_Kilitlendi.ToString(),
 					ExpiryDate = DateTime.Now.AddMinutes(60),
 				};
 				_context._NewUserIsActiveHistory.Add(create_IsActive_history);
 				_context.SaveChanges();
-				AccountUnlockMail(user, userEmail, isactiveToken);
-				return user;
+				AccountUnlockMail(user, userEmail, isUseractiveToken);
+				return null; //BURDA İSTERSEK HATALARDA USERLARI DÖNDÜRÜP DAHA DETAYLI LOG TUTABİLİRİZ AMA ŞUAN DA TUTUYORUZ DETAYLI LOG
 				//KİTLİ HESABA GİRİŞ YAPILMAYA ÇALIŞILIRSA OTOMATİK HESABI AKTİF ETMEK İÇİN MAİL GÖNDERİLSİN
+			}
+
+			if(!user.IsEmailConfirmed)
+			{
+				_logger.LogWarning("Hesap Aktifleştirilmemiştir: {UsernameOrEmail}", userEmail);  // Yanlış şifre loglaması
+
+				string isAccountConfirmationToken = Guid.NewGuid().ToString();
+
+				var create_IsAccountConfirmation_history = new NewAccountConfirmationHistory
+				{
+					UserID = user.Id,
+					IsUsed = false,
+					Token = isAccountConfirmationToken,
+					Description = IsAccountConfirmationDescription.Hesap_Onaylama.ToString(),
+					ExpiryDate = DateTime.Now.AddMinutes(60),
+				};
+				_context._NewAccountConfirmationHistory.Add(create_IsAccountConfirmation_history);
+				_context.SaveChanges();
+				AccountConfirmationMail(user, userEmail, isAccountConfirmationToken);
+				return null; //User Null DÖnsün
 			}
 
 			// Başarılı giriş
@@ -502,8 +544,8 @@ namespace School.Services
 			var create_IsActive_history = new NewUserIsActiveHistory
 			{
 				UserID = user.Id,
-				IsUsed = true,
-				Description= IsActiveDescription.Hesap_Aktifleştirildi.ToString(),
+				//IsUsed = true,
+				Description= IsUserActiveDescription.Hesap_Aktifleştirildi.ToString(),
 				IsActiveId=lastisactive.ID,			
 			};
 			_context._NewUserIsActiveHistory.Add(create_IsActive_history);

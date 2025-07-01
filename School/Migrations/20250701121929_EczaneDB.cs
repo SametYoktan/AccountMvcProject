@@ -65,6 +65,31 @@ namespace School.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "_NewAccountConfirmationHistory",
+                columns: table => new
+                {
+                    ID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserID = table.Column<int>(type: "int", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: true),
+                    CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActiveId = table.Column<int>(type: "int", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__NewAccountConfirmationHistory", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK__NewAccountConfirmationHistory__NewUsers_UserID",
+                        column: x => x.UserID,
+                        principalTable: "_NewUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "_NewEmailHistory",
                 columns: table => new
                 {
@@ -163,7 +188,7 @@ namespace School.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
                     Token = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: true),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpiryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActiveId = table.Column<int>(type: "int", nullable: true),
@@ -208,6 +233,11 @@ namespace School.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX__NewAccountConfirmationHistory_UserID",
+                table: "_NewAccountConfirmationHistory",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX__NewEmailHistory_UserID",
                 table: "_NewEmailHistory",
                 column: "UserID");
@@ -246,6 +276,9 @@ namespace School.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "_NewAccountConfirmationHistory");
+
             migrationBuilder.DropTable(
                 name: "_NewEmailHistory");
 

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace School.Models
 {
-	public class NewUserIsActiveHistory
+	public class NewAccountConfirmationHistory
 	{
         [Key]
         public int ID { get; set; }

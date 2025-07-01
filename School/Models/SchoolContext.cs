@@ -18,6 +18,7 @@ namespace School.Models
         public DbSet<NewUsers> _NewUsers {  get; set; }
         public DbSet<NewUserActionLog> _NewUserActivityLog {  get; set; }
         public DbSet<NewUserIsActiveHistory> _NewUserIsActiveHistory {  get; set; }
-        public DbSet<NewUserRoles> _NewUserRoles {  get; set; }
+		public DbSet<NewAccountConfirmationHistory> _NewAccountConfirmationHistory { get; set; }
+		public DbSet<NewUserRoles> _NewUserRoles {  get; set; }
     }
 }
