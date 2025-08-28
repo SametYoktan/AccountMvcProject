@@ -276,7 +276,7 @@ namespace School.Services
 
 			if(!user.IsEmailConfirmed)
 			{
-				_logger.LogWarning("Hesap Aktifleştirilmemiştir: {UsernameOrEmail}", userEmail);  // Yanlış şifre loglaması
+				_logger.LogWarning("Hesap Aktifleştirilmemiştir: {UsernameOrEmail}", userEmail);  // Hesap Aktifleştirilmemiştir Loglaması
 
 				string isAccountConfirmationToken = Guid.NewGuid().ToString();
 
@@ -432,12 +432,20 @@ namespace School.Services
 		{
 			if (string.IsNullOrEmpty(token))
 			{
-				Console.WriteLine("token geçesiz");
+				Console.WriteLine("token geçersiz");
 				return null;
 			}
-
-
 			return _context._NewUserIsActiveHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.Now);
+		}
+
+		public NewAccountConfirmationHistory? GetAccountIsActiveToken(string token)
+		{
+			if (string.IsNullOrEmpty(token))
+			{
+				Console.WriteLine("token geçersiz");
+				return null;
+			}
+			return _context._NewAccountConfirmationHistory.FirstOrDefault(u => u.Token == token && u.ExpiryDate > DateTime.Now);
 		}
 
 		public bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage)
@@ -553,6 +561,40 @@ namespace School.Services
 			await _context.SaveChangesAsync();
 
 			_logger.LogInformation("Kullanıcı Hesabı Aktifleştirildi: {Email}", email);
+
+			return true;
+		}
+
+		public async Task<bool> AccountActivateAndRedirect(string email)
+		{
+			var user = await _context._NewUsers.FirstOrDefaultAsync(u => u.Email == email);
+			if (user == null)
+			{
+				_logger.LogInformation("Kullanıcı bulunamadı: {Email}", email);
+				return false;
+			}
+
+			user.IsEmailConfirmed = true;
+
+			var lastisactive = await _context._NewAccountConfirmationHistory
+				 .Where(l => l.UserID == user.Id && l.ExpiryDate != null)
+				 .OrderByDescending(l => l.CreateDate)
+				 .FirstOrDefaultAsync();
+
+			lastisactive.IsUsed = true;
+
+			var create_account_IsActive_history = new NewAccountConfirmationHistory
+			{
+				UserID = user.Id,
+				IsUsed = true,
+				Description = IsAccountConfirmationDescription.Hesap_Onaylandı.ToString(),
+				IsActiveId = lastisactive.ID,
+			};
+			_context._NewAccountConfirmationHistory.Add(create_account_IsActive_history);
+
+			await _context.SaveChangesAsync();
+
+			_logger.LogInformation("Kullanıcı Hesabı Onaylandı: {Email}", email);
 
 			return true;
 		}

@@ -22,6 +22,7 @@
 
 	public enum IsAccountConfirmationDescription
 	{
-		Hesap_Onaylama = 1
+		Hesap_Onaylama = 1,
+        Hesap_Onaylandı=2
     }
 }

@@ -26,7 +26,11 @@ namespace School.Services
 
 		NewUserIsActiveHistory? GetUserIsActiveToken(string token);
 
+		NewAccountConfirmationHistory? GetAccountIsActiveToken(string token);
+
 		bool ResetPassword(string token, string newPassword, string confirmPassword, out string errorMessage);
         Task<bool> ActivateAndRedirect(string email);
-    }
+
+		Task<bool> AccountActivateAndRedirect(string email);
+	}
 }

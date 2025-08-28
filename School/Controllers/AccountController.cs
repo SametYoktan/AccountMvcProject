@@ -264,8 +264,6 @@ namespace School.Controllers
 
 			var isActivated = await _accountService.ActivateAndRedirect(email);
 
-			Console.WriteLine("Kullanıcı " + user.UserID);
-
 			if (!isActivated)
 			{
 				_logger.LogInformation("Kullanıcı bulunamadı: {Email}", email);
@@ -282,21 +280,33 @@ namespace School.Controllers
 		public async Task<IActionResult> AccountConfirmationRedirect(string email, string token)//Bu Method Bir Sayfaya Bağlı Çalışmaz.Arka Planda Tetiklendiğinde Çalışır
 		{
 			ViewBag.Token = token; //Token Url Den Gelir Maildeki Linke Tıkladıgımızda Otomatik Dolar
+			var user = _accountService.GetAccountIsActiveToken(token);
 
- 			if (token == null)//Kayıt Olduktan Sonra Herhangi Bir Token Oluşmayacağı İçin Burası Çalışacak CsHtml Koduna Bak
+			if (token == null)//Kayıt Olduktan Sonra Herhangi Bir Token Oluşmayacağı İçin Burası Çalışacak CsHtml Koduna Bak
 			{
 				ViewBag.ErrorMessage = "Token Yok";
 				Console.WriteLine("Token Yok");
 				return View();
 			}
 
-			var user = _accountService.GetUserIsActiveToken(token);
-			if(user==null)
+			if (user == null)
 			{
-				ViewBag.ErrorMessage = "Token Var";
-				Console.WriteLine("Token Var");
+				ViewBag.ErrorMessage = "Token Süresi Dolmuş";
+				Console.WriteLine("Token Yok" + token);
 			}
-			return View();
+
+			Console.WriteLine("Kullanıcının " + user.UserID);
+
+			var isActivated = await _accountService.AccountActivateAndRedirect(email);
+
+			if (!isActivated)
+			{
+				_logger.LogInformation("Kullanıcı bulunamadı: {Email}", email);
+				return NotFound("Kullanıcı bulunamadı.");
+			}
+
+			_logger.LogInformation("Kullanıcı Hesabı Onaylandı: {Email}", email);
+			return RedirectToAction("Login", "Account", new { activated = true });
 
 			//var user = _accountService.GetUserIsActiveToken(token);
 
@@ -322,6 +332,5 @@ namespace School.Controllers
 			//return RedirectToAction("Login", "Account", new { activated = true });
 		}
 		#endregion
-
 	}
 }
