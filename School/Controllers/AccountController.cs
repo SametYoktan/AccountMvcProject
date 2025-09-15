@@ -284,7 +284,7 @@ namespace School.Controllers
 
 			if (token == null)//Kayıt Olduktan Sonra Herhangi Bir Token Oluşmayacağı İçin Burası Çalışacak CsHtml Koduna Bak
 			{
-				ViewBag.ErrorMessage = "Token Yok";
+				ViewBag.ErrorMessage = "Token Yok"; //BU HATA KODLARINA GÖRE CSHTML DE İF LE EKRANA HATA MESAJI YAZDIRIYORUZ
 				Console.WriteLine("Token Yok");
 				return View();
 			}
